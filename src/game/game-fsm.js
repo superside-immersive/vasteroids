@@ -127,9 +127,12 @@ var GameFSM = {
     Game.ship.vel.x = 0;
     Game.ship.vel.y = 0;
     
-    // Activate protective shield for 3 seconds on respawn
-    Game.ship.protectiveShield = 180; // 3 seconds at 60fps
-    Game.ship.protectiveShieldRadius = 80;
+    // Activate protective shield for 1.5 seconds on respawn
+    Game.ship.protectiveShield = 90; // 1.5 seconds at 60fps
+    Game.ship.protectiveShieldRadius = 56;
+    
+    // Start shield hum sound
+    if (SFX.startShieldHum) SFX.startShieldHum();
     
     // Immediately transition to run state (no waiting)
     this.state = 'run';

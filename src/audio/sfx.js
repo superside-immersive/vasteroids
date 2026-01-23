@@ -22,6 +22,10 @@ var SFX = {
   waveCompleteAudio:  new Audio('assets/audio/wave_complete.wav'),
   playerDeathAudio:   new Audio('assets/audio/player_death.wav'),
   gameStartAudio:     new Audio('assets/audio/game_start.wav'),
+  shieldHumAudio:     new Audio('assets/audio/shield_hum.wav'),
+  
+  // Shield hum loop control
+  _shieldHumPlaying:  null,
   
   muted: false,
   _unlocked: false,
@@ -62,7 +66,8 @@ var SFX = {
     siloAudio:          { max: 1, cooldown: 1000, volume: 0.5 },
     waveCompleteAudio:  { max: 1, cooldown: 1000, volume: 0.75 },
     playerDeathAudio:   { max: 2, cooldown: 300, volume: 0.85 },
-    gameStartAudio:     { max: 1, cooldown: 500, volume: 0.7 }
+    gameStartAudio:     { max: 1, cooldown: 500, volume: 0.7 },
+    shieldHumAudio:     { max: 1, cooldown: 0, volume: 0.4 }
   };
 
   function makePool(base, config) {
@@ -158,4 +163,25 @@ SFX.playerDeath = function() {
 
 SFX.gameStart = function() {
   this.gameStartAudio();
+};
+
+SFX.startShieldHum = function() {
+  if (SFX.muted || SFX._shieldHumPlaying) return;
+  try {
+    var audio = new Audio('assets/audio/shield_hum.wav');
+    audio.loop = true;
+    audio.volume = 0.35;
+    audio.play().catch(function(){});
+    SFX._shieldHumPlaying = audio;
+  } catch(e) {}
+};
+
+SFX.stopShieldHum = function() {
+  if (SFX._shieldHumPlaying) {
+    try {
+      SFX._shieldHumPlaying.pause();
+      SFX._shieldHumPlaying.currentTime = 0;
+    } catch(e) {}
+    SFX._shieldHumPlaying = null;
+  }
 };

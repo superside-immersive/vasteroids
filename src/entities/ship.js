@@ -97,7 +97,7 @@ var Ship = function () {
   
   // Protective shield state (for spawn/teleport)
   this.protectiveShield = 0;
-  this.protectiveShieldRadius = 80;
+  this.protectiveShieldRadius = 56;
 
   /**
    * Pre-move update - handles input and physics
@@ -119,6 +119,10 @@ var Ship = function () {
     if (this.protectiveShield > 0) {
       this.protectiveShield -= delta;
       this.updateProtectiveShield();
+      // Stop hum when shield expires
+      if (this.protectiveShield <= 0 && SFX.stopShieldHum) {
+        SFX.stopShieldHum();
+      }
     }
     
     // During level transition, ship is frozen
@@ -348,9 +352,12 @@ var Ship = function () {
     this.hyperspaceInvulnerable = GAME_CONFIG.ship.hyperspaceInvulnerability;
     this.hyperspaceCooldown = 60; // 1.0s cooldown per flowchart spec
     
-    // Activate protective shield for 3 seconds on teleport
-    this.protectiveShield = 180; // 3 seconds at 60fps
-    this.protectiveShieldRadius = 80;
+    // Activate protective shield for 1.5 seconds on teleport
+    this.protectiveShield = 90; // 1.5 seconds at 60fps
+    this.protectiveShieldRadius = 56;
+    
+    // Start shield hum sound
+    if (SFX.startShieldHum) SFX.startShieldHum();
     
     // Play sound
     SFX.hyperspace();
