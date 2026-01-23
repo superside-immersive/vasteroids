@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cvent QR Scanner - Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📱 Cvent QR Scanner</h1>
+            <p class="subtitle">Demo Mode</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="scanner">Escáner</button>
+            <button class="tab-btn" data-tab="test-qr">QR de Prueba</button>
+            <button class="tab-btn" data-tab="history">Historial</button>
+            <button class="tab-btn" data-tab="settings">Config</button>
+        </nav>
+
+        <!-- Scanner Tab -->
+        <section id="scanner" class="tab-content active">
+            <div class="scanner-container">
+                <div id="qr-reader"></div>
+                <div class="scanner-controls">
+                    <button id="start-scan" class="btn btn-primary">
+                        <span class="icon">📷</span> Iniciar Escaneo
+                    </button>
+                    <button id="stop-scan" class="btn btn-secondary" disabled>
+                        <span class="icon">⏹️</span> Detener
+                    </button>
+                </div>
+                <select id="camera-select" class="camera-select">
+                    <option value="">Seleccionar cámara...</option>
+                </select>
+            </div>
+
+            <!-- Result Display -->
+            <div id="result-container" class="result-container hidden">
+                <div class="result-header">
+                    <span class="result-icon">✅</span>
+                    <h2>Asistente Encontrado</h2>
+                </div>
+                <div class="result-card">
+                    <div class="attendee-avatar" id="attendee-avatar">JD</div>
+                    <div class="attendee-info">
+                        <h3 id="attendee-name">-</h3>
+                        <p class="attendee-title" id="attendee-title">-</p>
+                        <p class="attendee-company" id="attendee-company">-</p>
+                        <p class="attendee-email" id="attendee-email">-</p>
+                    </div>
+                </div>
+                <div class="result-meta">
+                    <span class="badge" id="qr-format">Formato: -</span>
+                    <span class="badge" id="ref-id">Ref: -</span>
+                </div>
+                <button id="scan-another" class="btn btn-primary btn-block">
+                    Escanear Otro
+                </button>
+            </div>
+
+            <!-- Error Display -->
+            <div id="error-container" class="error-container hidden">
+                <div class="error-icon">❌</div>
+                <h3>Error</h3>
+                <p id="error-message">-</p>
+                <button id="retry-scan" class="btn btn-secondary">Reintentar</button>
+            </div>
+        </section>
+
+        <!-- Test QR Tab -->
+        <section id="test-qr" class="tab-content">
+            <h2>🧪 QR Codes de Prueba</h2>
+            <p class="section-desc">Escanea estos QR para probar la aplicación</p>
+            
+            <div class="test-qr-grid">
+                <!-- MeCard Format -->
+                <div class="test-qr-card">
+                    <h4>Formato MeCard</h4>
+                    <div class="qr-preview" id="qr-mecard"></div>
+                    <code class="qr-data">MECARD:CONF:ABC123;N:García,María;...</code>
+                </div>
+                
+                <!-- Delimited Format -->
+                <div class="test-qr-card">
+                    <h4>Formato Delimitado (^)</h4>
+                    <div class="qr-preview" id="qr-delimited"></div>
+                    <code class="qr-data">XYZ789^Juan^Pérez^juan@email.com</code>
+                </div>
+                
+                <!-- Email Format -->
+                <div class="test-qr-card">
+                    <h4>Solo Email</h4>
+                    <div class="qr-preview" id="qr-email"></div>
+                    <code class="qr-data">carlos.lopez@empresa.com</code>
+                </div>
+                
+                <!-- Reference ID Only -->
+                <div class="test-qr-card">
+                    <h4>Solo Reference ID</h4>
+                    <div class="qr-preview" id="qr-refid"></div>
+                    <code class="qr-data">2WBCTIXLFURQT</code>
+                </div>
+            </div>
+
+            <button id="generate-new-qrs" class="btn btn-secondary btn-block">
+                🔄 Generar Nuevos QR
+            </button>
+        </section>
+
+        <!-- History Tab -->
+        <section id="history" class="tab-content">
+            <div class="history-header">
+                <h2>📋 Historial de Escaneos</h2>
+                <button id="clear-history" class="btn btn-danger btn-small">
+                    🗑️ Limpiar
+                </button>
+            </div>
+            <div id="history-list" class="history-list">
+                <p class="empty-state">No hay escaneos registrados</p>
+            </div>
+        </section>
+
+        <!-- Settings Tab -->
+        <section id="settings" class="tab-content">
+            <h2>⚙️ Configuración</h2>
+            
+            <div class="settings-group">
+                <label class="toggle-label">
+                    <span>Modo Demo (datos simulados)</span>
+                    <input type="checkbox" id="demo-mode" checked>
+                    <span class="toggle-switch"></span>
+                </label>
+                <p class="setting-desc">Activa para usar datos ficticios sin conexión a API</p>
+            </div>
+
+            <div class="settings-group api-settings disabled" id="api-settings">
+                <h3>🔐 Credenciales API BadgeKit</h3>
+                <p class="setting-desc">Contacta a tu Account Manager de Cvent para obtener estas credenciales</p>
+                
+                <div class="form-group">
+                    <label for="event-id">Event ID</label>
+                    <input type="text" id="event-id" placeholder="ej: a1b2c3d4-5678-90ab-cdef">
+                </div>
+                
+                <div class="form-group">
+                    <label for="exhibitor-id">Exhibitor ID</label>
+                    <input type="text" id="exhibitor-id" placeholder="ej: exhibitor-123">
+                </div>
+                
+                <div class="form-group">
+                    <label for="bearer-token">Bearer Token</label>
+                    <input type="password" id="bearer-token" placeholder="Tu token de autenticación">
+                </div>
+                
+                <div class="form-group">
+                    <label for="api-region">Región</label>
+                    <select id="api-region">
+                        <option value="na" selected>Norteamérica (io.cvent.com)</option>
+                        <option value="eu">Europa (io-eur.cvent.com)</option>
+                    </select>
+                </div>
+                
+                <button id="save-settings" class="btn btn-primary btn-block">
+                    💾 Guardar Configuración
+                </button>
+                
+                <button id="test-connection" class="btn btn-secondary btn-block">
+                    🔗 Probar Conexión
+                </button>
+            </div>
+
+            <div class="settings-info">
+                <h4>ℹ️ Información</h4>
+                <p>Esta demo soporta los siguientes formatos de QR de Cvent:</p>
+                <ul>
+                    <li><strong>MeCard:</strong> MECARD:CONF:xxx;N:Apellido,Nombre;...</li>
+                    <li><strong>Delimitado:</strong> ID^Nombre^Apellido^email (separadores: ^ * % |)</li>
+                    <li><strong>Email:</strong> usuario@dominio.com</li>
+                    <li><strong>Reference ID:</strong> Código alfanumérico directo</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Buscando asistente...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="qr-parser.js"></script>
+    <script src="mock-service.js"></script>
+    <script src="storage.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

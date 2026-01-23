@@ -1,0 +1,1110 @@
+/* UI overlay styles for HUD, scoreboards, prompts */
+:root {
+  --ui-bg: rgba(14, 20, 44, 0.8);
+  --ui-panel: rgba(18, 26, 54, 0.85);
+  --ui-border: #1fd9fe;
+  --ui-glow: 0 0 16px rgba(31, 217, 254, 0.35);
+  --ui-text: #e5e7eb;
+  --ui-muted: #9ca3af;
+  --ui-accent: #7cf0ff;
+  --ui-warning: #ff6b6b;
+}
+
+body {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  color: var(--ui-text);
+  background: #0E142C;
+}
+
+#game-container {
+  filter: drop-shadow(0 0 18px rgba(31, 217, 254, 0.2));
+}
+
+.ui-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  color: var(--ui-text);
+  text-align: center;
+  font-family: 'Orbitron', 'Courier New', monospace;
+}
+
+.ui-overlay.interactive {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.ui-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-glow);
+  padding: 18px 22px;
+  border-radius: 10px;
+  min-width: 320px;
+  pointer-events: auto;
+}
+
+.scoreboard-panel {
+  min-width: 340px;
+}
+
+.scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: var(--ui-text);
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scoreboard-table th {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  color: var(--ui-muted);
+}
+
+.scoreboard-table tr.highlight td {
+  color: var(--ui-accent);
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(124, 240, 255, 0.8);
+}
+
+.scoreboard-table tr.highlight {
+  background: rgba(31, 217, 254, 0.15);
+  animation: highlightPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%, 100% { background: rgba(31, 217, 254, 0.15); }
+  50% { background: rgba(31, 217, 254, 0.3); }
+}
+
+.input-name {
+  width: 80%;
+  padding: 10px 12px;
+  background: #0f162f;
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 6px;
+  outline: none;
+  box-shadow: var(--ui-glow);
+}
+
+.prompt-pill {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  color: var(--ui-text);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--ui-glow);
+  letter-spacing: 1px;
+}
+
+.hud-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 14px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.hud-score {
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(31, 217, 254, 0.45);
+}
+
+.hud-lives {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hud-chip {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ui-border);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--ui-glow);
+  color: var(--ui-text);
+  letter-spacing: 1px;
+}
+
+.text-glow {
+  text-shadow: 0 0 12px rgba(124, 240, 255, 0.5);
+}
+
+.hidden { display: none !important; }
+
+/* ========================================
+   Mobile Touch Controls
+   ======================================== */
+
+#mobile-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 20px 20px;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 100;
+  touch-action: none;
+}
+
+/* Joystick Zone (Left Side) */
+#joystick-zone {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#joystick-base {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(14, 20, 44, 0.7);
+  border: 2px solid var(--ui-border);
+  box-shadow: 
+    0 0 20px rgba(31, 217, 254, 0.3),
+    inset 0 0 30px rgba(31, 217, 254, 0.1);
+}
+
+#joystick-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #3ae8ff, #1fd9fe 50%, #0a8fa8);
+  border: 2px solid #7cf0ff;
+  box-shadow: 
+    0 0 15px rgba(31, 217, 254, 0.6),
+    0 0 30px rgba(31, 217, 254, 0.3);
+  transition: transform 0.05s ease-out;
+}
+
+/* Fire Button (Right Side) */
+#fire-button {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(217, 18, 71, 0.2);
+  border: 3px solid #D91247;
+  box-shadow: 
+    0 0 20px rgba(217, 18, 71, 0.4),
+    inset 0 0 20px rgba(217, 18, 71, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+#fire-button span {
+  color: #ff6b6b;
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+}
+
+#fire-button.active {
+  background: rgba(217, 18, 71, 0.5);
+  transform: scale(0.95);
+  box-shadow: 
+    0 0 30px rgba(217, 18, 71, 0.7),
+    inset 0 0 30px rgba(217, 18, 71, 0.4);
+}
+
+#fire-button.active span {
+  color: #fff;
+}
+
+/* Hide mobile controls on desktop */
+@media (hover: hover) and (pointer: fine) {
+  #mobile-controls {
+    display: none !important;
+  }
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 480px) {
+  #mobile-controls {
+    height: 150px;
+    padding: 0 15px 15px 15px;
+  }
+  
+  #joystick-zone {
+    width: 120px;
+    height: 120px;
+  }
+  
+  #joystick-base {
+    width: 100px;
+    height: 100px;
+  }
+  
+  #joystick-thumb {
+    width: 40px;
+    height: 40px;
+  }
+  
+  #fire-button {
+    width: 80px;
+    height: 80px;
+  }
+  
+  #fire-button span {
+    font-size: 12px;
+  }
+}
+
+/* Prevent text selection and zoom on touch */
+#mobile-controls * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ========================================
+   QR Scanner Overlay
+   ======================================== */
+
+.qr-scanner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 20, 44, 0.95);
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.qr-scanner-container {
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-glow), 0 0 40px rgba(31, 217, 254, 0.15);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+  position: relative;
+  min-width: 280px;
+  max-width: 340px;
+}
+
+.qr-scanner-title {
+  font-size: 20px;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+  color: var(--ui-accent);
+}
+
+.qr-scanner-subtitle {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  margin-bottom: 16px;
+}
+
+.qr-preview-wrapper {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+  border: 2px solid var(--ui-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0f1f;
+}
+
+.qr-preview {
+  width: 100%;
+  height: 100%;
+}
+
+.qr-preview video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* Scanning animation line */
+.qr-scan-line {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--ui-accent) 20%, 
+    #fff 50%, 
+    var(--ui-accent) 80%, 
+    transparent 100%);
+  box-shadow: 0 0 15px var(--ui-accent), 0 0 30px var(--ui-border);
+  animation: qrScanLine 2s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+@keyframes qrScanLine {
+  0%, 100% {
+    top: 10px;
+    opacity: 0.6;
+  }
+  50% {
+    top: calc(100% - 13px);
+    opacity: 1;
+  }
+}
+
+/* Corner markers */
+.qr-corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.qr-corners .corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--ui-accent);
+}
+
+.qr-corners .corner.tl {
+  top: 8px; left: 8px;
+  border-right: none; border-bottom: none;
+}
+
+.qr-corners .corner.tr {
+  top: 8px; right: 8px;
+  border-left: none; border-bottom: none;
+}
+
+.qr-corners .corner.bl {
+  bottom: 8px; left: 8px;
+  border-right: none; border-top: none;
+}
+
+.qr-corners .corner.br {
+  bottom: 8px; right: 8px;
+  border-left: none; border-top: none;
+}
+
+.qr-status {
+  margin-top: 14px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  min-height: 16px;
+}
+
+/* Result panel */
+.qr-result-panel {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(31, 217, 254, 0.08);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+}
+
+.qr-result-name {
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--ui-accent);
+  text-shadow: 0 0 10px rgba(124, 240, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.qr-result-company {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  margin-bottom: 12px;
+  min-height: 14px;
+}
+
+.qr-result-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.qr-btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.qr-btn-ok {
+  background: rgba(31, 217, 254, 0.2);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-accent);
+}
+
+.qr-btn-ok:hover {
+  background: rgba(31, 217, 254, 0.4);
+  box-shadow: 0 0 15px rgba(31, 217, 254, 0.4);
+}
+
+.qr-btn-cancel {
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid var(--ui-warning);
+  color: var(--ui-warning);
+}
+
+.qr-btn-cancel:hover {
+  background: rgba(255, 107, 107, 0.3);
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+}
+
+.qr-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--ui-muted);
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.qr-close-btn:hover {
+  opacity: 1;
+  color: var(--ui-warning);
+}
+
+/* QR Scan button in game-over panel */
+.qr-scan-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: rgba(31, 217, 254, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+}
+
+.qr-scan-prompt:hover {
+  background: rgba(31, 217, 254, 0.18);
+  color: var(--ui-accent);
+  box-shadow: var(--ui-glow);
+}
+
+.qr-scan-prompt svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.qr-scan-prompt .qr-icon {
+  font-size: 14px;
+}
+
+/* ========================================
+   Inline QR Scanner (Game Over Panel)
+   ======================================== */
+
+.game-over-panel {
+  min-width: 420px;
+  max-width: 480px;
+}
+
+.name-entry-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.qr-section,
+.input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ui-muted);
+  text-transform: uppercase;
+}
+
+.entry-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  position: relative;
+}
+
+.entry-divider::before {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--ui-border), transparent);
+}
+
+.entry-divider span {
+  background: var(--ui-panel);
+  padding: 8px 4px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  z-index: 1;
+}
+
+/* Inline QR Preview */
+.qr-inline-wrapper {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border: 2px solid var(--ui-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0f1f;
+}
+
+.qr-inline-preview {
+  width: 100%;
+  height: 100%;
+}
+
+.qr-inline-preview video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* Inline scan line animation */
+.qr-scan-line-inline {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--ui-accent) 20%, 
+    #fff 50%, 
+    var(--ui-accent) 80%, 
+    transparent 100%);
+  box-shadow: 0 0 10px var(--ui-accent), 0 0 20px var(--ui-border);
+  animation: qrScanLineInline 1.8s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+@keyframes qrScanLineInline {
+  0%, 100% {
+    top: 8px;
+    opacity: 0.5;
+  }
+  50% {
+    top: calc(100% - 10px);
+    opacity: 1;
+  }
+}
+
+/* Inline corner markers */
+.qr-corners-inline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.qr-corners-inline .corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ui-accent);
+}
+
+.qr-corners-inline .corner.tl {
+  top: 6px; left: 6px;
+  border-right: none; border-bottom: none;
+}
+
+.qr-corners-inline .corner.tr {
+  top: 6px; right: 6px;
+  border-left: none; border-bottom: none;
+}
+
+.qr-corners-inline .corner.bl {
+  bottom: 6px; left: 6px;
+  border-right: none; border-top: none;
+}
+
+.qr-corners-inline .corner.br {
+  bottom: 6px; right: 6px;
+  border-left: none; border-top: none;
+}
+
+.qr-inline-status {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  min-height: 14px;
+}
+
+.qr-inline-status.success {
+  color: var(--ui-accent);
+  text-shadow: 0 0 8px rgba(124, 240, 255, 0.6);
+}
+
+/* Input section styling */
+.input-section .input-name {
+  width: 130px;
+  text-align: center;
+  padding: 12px 10px;
+}
+
+.input-name.flash {
+  animation: inputFlash 0.5s ease-out;
+}
+
+@keyframes inputFlash {
+  0% {
+    background: rgba(31, 217, 254, 0.4);
+    box-shadow: 0 0 20px rgba(31, 217, 254, 0.6);
+  }
+  100% {
+    background: #0f162f;
+    box-shadow: var(--ui-glow);
+  }
+}
+
+.submit-btn {
+  margin-top: 8px;
+  padding: 10px 24px;
+  font-size: 13px;
+}
+
+/* Responsive for smaller screens */
+@media screen and (max-width: 500px) {
+  .game-over-panel {
+    min-width: 300px;
+    max-width: 340px;
+  }
+
+  .name-entry-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .entry-divider {
+    height: auto;
+    width: 100%;
+  }
+
+  .entry-divider::before {
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--ui-border), transparent);
+  }
+
+  .qr-inline-wrapper,
+  .input-section .input-name {
+    width: 150px;
+  }
+}
+
+/* ========================================
+   QR Scan Confirmation Panel
+   ======================================== */
+
+.qr-confirm-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(14, 20, 44, 0.95);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.confirm-name {
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: var(--ui-accent);
+  text-shadow: 0 0 10px rgba(124, 240, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.confirm-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ui-muted);
+  color: var(--ui-muted);
+}
+
+.confirm-btn.selected {
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
+  box-shadow: 0 0 12px rgba(31, 217, 254, 0.4);
+  background: rgba(31, 217, 254, 0.15);
+}
+
+.confirm-btn.confirm-ok.selected {
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
+}
+
+.confirm-btn.confirm-cancel.selected {
+  border-color: var(--ui-warning);
+  color: var(--ui-warning);
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.4);
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.confirm-btn:hover {
+  opacity: 0.9;
+}
+
+.confirm-hint {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* Position the confirm panel over the QR section */
+.qr-section {
+  position: relative;
+}
+
+/* ========================================
+   DASE Meter Styles - Improved UI
+   ======================================== */
+
+.dase-meter-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  text-align: center;
+  padding: 12px 16px;
+  background: rgba(14, 20, 44, 0.85);
+  border: 1px solid rgba(232, 107, 56, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(232, 107, 56, 0.15);
+  transition: all 0.3s ease;
+}
+
+.dase-meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dase-meter-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #E86B38;
+  text-shadow: 0 0 8px rgba(232, 107, 56, 0.5);
+  transition: color 0.3s ease;
+}
+
+.dase-meter-counter {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #9ca3af;
+  transition: color 0.3s ease;
+}
+
+/* Fragment icons row */
+.dase-fragment-icons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dase-fragment-icon {
+  font-size: 16px;
+  color: rgba(232, 107, 56, 0.25);
+  text-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.dase-fragment-icon.filled {
+  color: #E86B38;
+  text-shadow: 0 0 10px rgba(232, 107, 56, 0.8);
+}
+
+.dase-fragment-icon.just-filled {
+  animation: fragmentPop 0.4s ease-out;
+}
+
+@keyframes fragmentPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.6); color: #FFBC42; text-shadow: 0 0 20px #FFBC42; }
+  100% { transform: scale(1); }
+}
+
+/* DASE Activation text - hidden by default */
+.dase-activation-text {
+  display: none;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  color: #06D69F;
+  margin-top: 8px;
+  text-shadow: 0 0 15px rgba(6, 214, 159, 0.8);
+}
+
+/* When meter is full and ready */
+.dase-meter-container.ready {
+  border-color: #06D69F;
+  box-shadow: 0 0 30px rgba(6, 214, 159, 0.4);
+  animation: readyPulse 0.8s ease-in-out infinite;
+}
+
+.dase-meter-container.ready .dase-activation-text {
+  display: block;
+  animation: textGlow 0.5s ease-in-out infinite alternate;
+}
+
+.dase-meter-container.ready .dase-meter-counter {
+  color: #06D69F;
+  text-shadow: 0 0 10px rgba(6, 214, 159, 0.8);
+}
+
+.dase-meter-container.ready .dase-fragment-icon.filled {
+  color: #06D69F;
+  text-shadow: 0 0 12px rgba(6, 214, 159, 0.8);
+  animation: iconGlow 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes readyPulse {
+  0%, 100% { 
+    box-shadow: 0 0 30px rgba(6, 214, 159, 0.4);
+    transform: translateX(-50%) scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 50px rgba(6, 214, 159, 0.6);
+    transform: translateX(-50%) scale(1.02);
+  }
+}
+
+@keyframes textGlow {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; text-shadow: 0 0 25px rgba(6, 214, 159, 1); }
+}
+
+@keyframes iconGlow {
+  0% { text-shadow: 0 0 8px rgba(6, 214, 159, 0.6); }
+  100% { text-shadow: 0 0 16px rgba(6, 214, 159, 1); }
+}
+
+/* Active DASE state */
+.dase-meter-container.active {
+  border-color: rgba(31, 217, 254, 0.8);
+  box-shadow: 0 0 25px rgba(31, 217, 254, 0.4);
+}
+
+.dase-meter-container.active .dase-meter-label {
+  color: #1FD9FE;
+  text-shadow: 0 0 12px rgba(31, 217, 254, 0.8);
+}
+
+.dase-meter-container.active .dase-fragment-icons {
+  display: none;
+}
+
+.dase-meter-container.active .dase-activation-text {
+  display: none;
+}
+
+.dase-meter-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(232, 107, 56, 0.3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.dase-meter-container.active .dase-meter-bar {
+  border-color: rgba(31, 217, 254, 0.6);
+  box-shadow: 0 0 10px rgba(31, 217, 254, 0.3);
+}
+
+.dase-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #E86B38, #FFBC42);
+  border-radius: 4px;
+  transition: width 0.15s ease-out, background 0.3s ease;
+}
+
+.dase-meter-container.active .dase-meter-fill {
+  background: linear-gradient(90deg, #1FD9FE, #06D69F);
+  box-shadow: 0 0 10px rgba(31, 217, 254, 0.6);
+}
+
+@keyframes dasePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ========================================
+   COMBO Indicator (for Similarity Pickup)
+   ======================================== */
+
+.combo-indicator {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(255, 0, 255, 0.15);
+  border: 1px solid rgba(255, 0, 255, 0.5);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.combo-indicator.hidden {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.8);
+  pointer-events: none;
+}
+
+.combo-indicator.close {
+  animation: comboShake 0.15s ease infinite;
+  border-color: #FF00FF;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+}
+
+@keyframes comboShake {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-50%) rotate(-2deg); }
+  75% { transform: translateX(-50%) rotate(2deg); }
+}
+
+.combo-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #FF00FF;
+  margin-bottom: 6px;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+}
+
+.combo-pips {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.combo-pip {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 0, 255, 0.4);
+  border-radius: 2px;
+  background: transparent;
+  transition: all 0.15s ease;
+}
+
+.combo-pip.active {
+  background: #FF00FF;
+  border-color: #FF00FF;
+  box-shadow: 0 0 10px #FF00FF;
+  animation: pipPop 0.2s ease-out;
+}
+
+@keyframes pipPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* Hyperspace counter styling */
+.hud-hyperspace {
+  color: #06D69F;
+  border-color: #06D69F;
+  transition: opacity 0.3s ease;
+}
+
+.hud-wave {
+  color: #FFBC42;
+  border-color: #FFBC42;
+}

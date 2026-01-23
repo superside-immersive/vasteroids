@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>VAST Asteroids</title>
+    
+    <!-- Libraries -->
+    <script src="jquery-1.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="vector_battle_regular.typeface.js"></script>
+    <script src="ipad.js"></script>
+
+    <!-- Web Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- UI Styles -->
+    <link rel="stylesheet" href="src/styles/ui.css">
+    
+    <!-- Config -->
+    <script src="src/config/constants.js"></script>
+    
+    <!-- Utilities -->
+    <script src="src/utils/matrix.js"></script>
+    <script src="src/utils/grid-node.js"></script>
+    <script src="src/utils/text-renderer.js"></script>
+    <script src="src/utils/glow-renderer.js"></script>
+
+    <!-- UI Helpers -->
+    <script src="src/ui/animations.js"></script>
+    <script src="src/ui/hud.js"></script>
+    <script src="src/ui/scoreboard.js"></script>
+    <script src="src/ui/game-over.js"></script>
+    <script src="src/ui/retro-fx.js"></script>
+    
+    <!-- Audio -->
+    <script src="src/audio/sfx.js"></script>
+    
+    <!-- Input -->
+    <script src="src/input/input-handler.js"></script>
+    
+    <!-- Entities -->
+    <script src="src/entities/sprite.js"></script>
+    <script src="src/entities/ship.js"></script>
+    <script src="src/entities/bullet.js"></script>
+    <script src="src/entities/alien.js"></script>
+    <script src="src/entities/asteroid.js"></script>
+    <script src="src/entities/explosion.js"></script>
+    <script src="src/entities/data-fragment.js"></script>
+    <script src="src/entities/silo.js"></script>
+    <script src="src/entities/similarity-pickup.js"></script>
+    
+    <!-- Game -->
+    <script src="src/game/game.js"></script>
+    <script src="src/game/dase-mode.js"></script>
+    <script src="src/game/similarity-mode.js"></script>
+    <script src="src/game/game-fsm.js"></script>
+    <script src="src/game/intro.js"></script>
+    
+    <!-- Main Entry Point -->
+    <script src="src/main.js"></script>
+    
+    <style>
+      body { 
+        background: #0E142C; 
+        color: #E5E7EB; 
+        font-family: 'Courier New', monospace;
+        margin: 0;
+        padding: 20px;
+      }
+      
+      #game-container { 
+        background: #0E142C;
+        position: relative;
+        display: inline-block;
+      }
+      
+      #canvas { 
+        border: 1px solid #1FD9FE; 
+        display: block;
+      }
+      
+      .button { 
+        position: absolute; 
+        border: 1px solid #1FD9FE; 
+        color: #E5E7EB; 
+        background: transparent;
+        font-family: 'Courier New', monospace;
+      }
+      
+      #left-controls { 
+        position: absolute; 
+        left: 1px; 
+        bottom: 0px; 
+        display: none; 
+      }
+      
+      #right-controls { 
+        position: absolute; 
+        right: 1px; 
+        bottom: 0px; 
+        display: none; 
+      }
+      
+      #up { width: 200px; height: 100px; bottom: 100px; }
+      #left { width: 100px; height: 100px; bottom: 0px; }
+      #right { width: 100px; height: 100px; bottom: 0px; left: 100px; }
+      #space { width: 200px; height: 200px; bottom: 0px; right: 0px; }
+      
+      .controls-info {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #9CA3AF;
+      }
+      
+      .controls-info kbd {
+        background: #1a2744;
+        padding: 2px 6px;
+        border-radius: 3px;
+        border: 1px solid #1FD9FE;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="canvas" width="540" height="960"></canvas>
+      <div id="left-controls">
+        <div id="up" class="button">THRUST</div>
+        <div id="left" class="button">LEFT</div>
+        <div id="right" class="button">RIGHT</div>
+      </div>
+      <div id="right-controls">
+        <div id="space" class="button">FIRE</div>
+      </div>
+    </div>
+    
+    <div style="margin-top:12px; color:#E5E7EB; font-family: 'Courier New', monospace;">
+      Letras por asteroide: 
+      <input id="char-slider" type="range" min="40" max="400" step="10" value="200" style="width:240px; vertical-align:middle;">
+      <span id="char-value" style="display:inline-block; width:40px; text-align:right;">200</span>
+      <button id="toggle-retro-tv" aria-pressed="false" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Retro TV: OFF</button>
+    </div>
+    
+    <div class="controls-info">
+      <p>
+        <kbd>←</kbd> <kbd>→</kbd> Rotate | 
+        <kbd>↑</kbd> Thrust | 
+        <kbd>SPACE</kbd> Fire | 
+        <kbd>P</kbd> Pause | 
+        <kbd>M</kbd> Mute |
+        <kbd>F</kbd> FPS
+      </p>
+      <button id="test-next-level" style="margin-top:6px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Test NEXT LEVEL</button>
+      <a href="/qr-demo.html" target="_blank" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; text-decoration:none; font-size:12px;">◫ QR DEMO CODES</a>
+    </div>
+
+    <script>
+      (function() {
+        var btn = document.getElementById('test-next-level');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            if (window.Game && Game.sprites && Game.FSM) {
+              // If in waiting state, start the game first
+              if (Game.FSM.state === 'waiting') {
+                window.gameStart = true;
+                // Give FSM time to transition to run state
+                setTimeout(function() {
+                  // Now destroy all asteroids to trigger new_level
+                  for (var i = 0; i < Game.sprites.length; i++) {
+                    if (Game.sprites[i].name === 'asteroid') {
+                      Game.sprites[i].die();
+                    }
+                  }
+                }, 100);
+              } else if (Game.FSM.state === 'run') {
+                // Already running, just destroy asteroids
+                for (var i = 0; i < Game.sprites.length; i++) {
+                  if (Game.sprites[i].name === 'asteroid') {
+                    Game.sprites[i].die();
+                  }
+                }
+              }
+            }
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

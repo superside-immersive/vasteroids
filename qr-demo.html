@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo QR Codes - VAST Asteroids</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --ui-bg: rgba(14, 20, 44, 1);
+      --ui-panel: rgba(18, 26, 54, 0.95);
+      --ui-border: #1fd9fe;
+      --ui-glow: 0 0 16px rgba(31, 217, 254, 0.35);
+      --ui-text: #e5e7eb;
+      --ui-muted: #9ca3af;
+      --ui-accent: #7cf0ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', 'Courier New', monospace;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      letter-spacing: 4px;
+      color: var(--ui-accent);
+      text-shadow: 0 0 20px rgba(124, 240, 255, 0.5);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--ui-muted);
+      margin-bottom: 30px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--ui-accent);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding: 8px 16px;
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .back-link:hover {
+      background: rgba(31, 217, 254, 0.15);
+      box-shadow: var(--ui-glow);
+    }
+
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .qr-card {
+      background: var(--ui-panel);
+      border: 1px solid var(--ui-border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--ui-glow);
+    }
+
+    .qr-format {
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: var(--ui-accent);
+      margin-bottom: 6px;
+    }
+
+    .qr-description {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--ui-muted);
+      margin-bottom: 16px;
+      min-height: 28px;
+    }
+
+    .qr-code-wrapper {
+      display: inline-block;
+      padding: 12px;
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .qr-code-wrapper img {
+      display: block;
+    }
+
+    .qr-raw {
+      font-size: 9px;
+      color: var(--ui-muted);
+      word-break: break-all;
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 6px;
+      max-height: 60px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+
+    .refresh-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 12px 24px;
+      background: rgba(31, 217, 254, 0.15);
+      border: 1px solid var(--ui-border);
+      border-radius: 8px;
+      color: var(--ui-accent);
+      font-family: 'Orbitron', 'Courier New', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(31, 217, 254, 0.3);
+      box-shadow: var(--ui-glow);
+    }
+
+    .instructions {
+      text-align: center;
+      margin-top: 30px;
+      padding: 16px;
+      background: rgba(31, 217, 254, 0.08);
+      border: 1px solid rgba(31, 217, 254, 0.3);
+      border-radius: 8px;
+    }
+
+    .instructions h3 {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--ui-accent);
+      margin: 0 0 10px 0;
+    }
+
+    .instructions p {
+      font-size: 10px;
+      color: var(--ui-muted);
+      margin: 0;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← BACK TO GAME</a>
+    
+    <h1>DEMO QR CODES</h1>
+    <p class="subtitle">SCAN THESE WITH THE GAME TO TEST BADGE INPUT</p>
+
+    <div class="qr-grid" id="qr-grid">
+      <!-- QR codes will be generated here -->
+    </div>
+
+    <button class="refresh-btn" onclick="generateAllQRCodes()">⟳ GENERATE NEW CODES</button>
+
+    <div class="instructions">
+      <h3>HOW TO USE</h3>
+      <p>
+        1. Play the game until GAME OVER<br>
+        2. Point your camera at one of these QR codes<br>
+        3. The name from the badge will be detected automatically<br>
+        4. Press OK to accept or RESCAN for another code
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Mock Service data (simplified from cvent_scanner)
+    const MockService = {
+      firstNames: [
+        'María', 'José', 'Juan', 'Ana', 'Carlos', 'Laura', 'Luis', 'Sofía',
+        'Diego', 'Valentina', 'Martín', 'Camila', 'Alejandro', 'Isabella',
+        'Sebastián', 'Luciana', 'Mateo', 'Paula', 'Nicolás', 'Fernanda'
+      ],
+      lastNames: [
+        'García', 'Rodríguez', 'Martínez', 'López', 'González', 'Hernández',
+        'Pérez', 'Sánchez', 'Ramírez', 'Torres', 'Flores', 'Rivera',
+        'Gómez', 'Díaz', 'Reyes', 'Morales', 'Cruz', 'Ortiz'
+      ],
+      companies: [
+        'TechCorp', 'InnovaDigital', 'CloudSolutions', 'StartUpHub',
+        'DataAnalytics', 'SoftwareFactory', 'FintechLab', 'MediaNetworks'
+      ],
+      titles: [
+        'CEO', 'CTO', 'Director', 'Manager', 'Engineer', 'Designer', 'Analyst'
+      ],
+
+      random(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      },
+
+      generateReferenceId() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 11; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      },
+
+      generateTestQRData() {
+        const refId1 = this.generateReferenceId();
+        const refId2 = this.generateReferenceId();
+        const refId3 = this.generateReferenceId();
+        const refId4 = this.generateReferenceId();
+
+        const firstName1 = this.random(this.firstNames).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const lastName1 = this.random(this.lastNames).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const company1 = this.random(this.companies);
+
+        const firstName2 = this.random(this.firstNames).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const lastName2 = this.random(this.lastNames).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const company2 = this.random(this.companies);
+        const title2 = this.random(this.titles);
+
+        const email3 = `${this.random(this.firstNames).toLowerCase()}.${this.random(this.lastNames).toLowerCase()}@empresa.com`
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        return [
+          {
+            format: 'MeCard',
+            data: `MECARD:CONF:${refId1};N:${lastName1},${firstName1};ORG:${company1};;`,
+            description: `${firstName1} ${lastName1} - ${company1}`
+          },
+          {
+            format: 'Delimited (^)',
+            data: `${refId2}^${firstName2}^${lastName2}^test@email.com^${title2}^${company2}`,
+            description: `${firstName2} ${lastName2} - ${company2}`
+          },
+          {
+            format: 'Email Only',
+            data: email3,
+            description: email3
+          },
+          {
+            format: 'Reference ID',
+            data: refId4,
+            description: `ID: ${refId4}`
+          }
+        ];
+      }
+    };
+
+    function generateAllQRCodes() {
+      const grid = document.getElementById('qr-grid');
+      grid.innerHTML = '';
+
+      const testData = MockService.generateTestQRData();
+
+      testData.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+
+        const formatLabel = document.createElement('div');
+        formatLabel.className = 'qr-format';
+        formatLabel.textContent = item.format;
+
+        const description = document.createElement('div');
+        description.className = 'qr-description';
+        description.textContent = item.description;
+
+        const qrWrapper = document.createElement('div');
+        qrWrapper.className = 'qr-code-wrapper';
+        
+        const qrDiv = document.createElement('div');
+        qrDiv.id = 'qr-' + index;
+        qrWrapper.appendChild(qrDiv);
+
+        const rawData = document.createElement('div');
+        rawData.className = 'qr-raw';
+        rawData.textContent = item.data;
+
+        card.appendChild(formatLabel);
+        card.appendChild(description);
+        card.appendChild(qrWrapper);
+        card.appendChild(rawData);
+        grid.appendChild(card);
+
+        // Generate QR code
+        new QRCode(qrDiv, {
+          text: item.data,
+          width: 150,
+          height: 150,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      });
+    }
+
+    // Generate on load
+    window.onload = generateAllQRCodes;
+  </script>
+</body>
+</html>
