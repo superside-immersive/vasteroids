@@ -131,9 +131,6 @@ var GameFSM = {
     Game.ship.protectiveShield = 90; // 1.5 seconds at 60fps
     Game.ship.protectiveShieldRadius = 56;
     
-    // Start shield hum sound
-    if (SFX.startShieldHum) SFX.startShieldHum();
-    
     // Immediately transition to run state (no waiting)
     this.state = 'run';
   },

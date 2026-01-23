@@ -119,10 +119,6 @@ var Ship = function () {
     if (this.protectiveShield > 0) {
       this.protectiveShield -= delta;
       this.updateProtectiveShield();
-      // Stop hum when shield expires
-      if (this.protectiveShield <= 0 && SFX.stopShieldHum) {
-        SFX.stopShieldHum();
-      }
     }
     
     // During level transition, ship is frozen
@@ -355,9 +351,6 @@ var Ship = function () {
     // Activate protective shield for 1.5 seconds on teleport
     this.protectiveShield = 90; // 1.5 seconds at 60fps
     this.protectiveShieldRadius = 56;
-    
-    // Start shield hum sound
-    if (SFX.startShieldHum) SFX.startShieldHum();
     
     // Play sound
     SFX.hyperspace();
