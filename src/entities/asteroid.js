@@ -508,8 +508,35 @@ var Asteroid = function () {
     var newRoid = new Asteroid();
     newRoid.x = this.x + (Math.random() - 0.5) * 40;
     newRoid.y = this.y + (Math.random() - 0.5) * 40;
-    newRoid.vel.x = Math.random() * 4 - 2;
-    newRoid.vel.y = Math.random() * 4 - 2;
+    
+    // Calculate velocity AWAY from player ship
+    var baseSpeed = 2 + Math.random() * 2; // Speed between 2-4
+    var angle;
+    
+    if (Game.ship && Game.ship.visible) {
+      // Direction from ship to asteroid
+      var dx = this.x - Game.ship.x;
+      var dy = this.y - Game.ship.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist > 0) {
+        // Base angle pointing AWAY from ship
+        var awayAngle = Math.atan2(dy, dx);
+        
+        // Spread fragments in a cone away from player (±60 degrees)
+        var spreadAngle = (Math.PI / 3); // 60 degrees
+        var fragmentSpread = (groupIndex / (totalGroups - 1 || 1)) * 2 - 1; // -1 to 1
+        angle = awayAngle + fragmentSpread * spreadAngle;
+      } else {
+        angle = Math.random() * Math.PI * 2;
+      }
+    } else {
+      // No ship visible, random direction
+      angle = Math.random() * Math.PI * 2;
+    }
+    
+    newRoid.vel.x = Math.cos(angle) * baseSpeed;
+    newRoid.vel.y = Math.sin(angle) * baseSpeed;
     newRoid.vel.rot = Math.random() * 2 - 1;
 
     // Mark as fragment for billboard alignment
