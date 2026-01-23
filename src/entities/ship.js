@@ -94,6 +94,10 @@ var Ship = function () {
   // Hyperspace state
   this.hyperspaceInvulnerable = 0;
   this.hyperspaceCooldown = 0;
+  
+  // Protective shield state (for spawn/teleport)
+  this.protectiveShield = 0;
+  this.protectiveShieldRadius = 80;
 
   /**
    * Pre-move update - handles input and physics
@@ -109,6 +113,12 @@ var Ship = function () {
     }
     if (this.hyperspaceCooldown > 0) {
       this.hyperspaceCooldown -= delta;
+    }
+    
+    // Update protective shield (destroys asteroids that touch it)
+    if (this.protectiveShield > 0) {
+      this.protectiveShield -= delta;
+      this.updateProtectiveShield();
     }
     
     // During level transition, ship is frozen
@@ -209,6 +219,33 @@ var Ship = function () {
   };
 
   /**
+   * Update protective shield - destroys asteroids that enter the shield radius
+   */
+  this.updateProtectiveShield = function() {
+    if (this.protectiveShield <= 0) return;
+    
+    var shieldX = this.x;
+    var shieldY = this.y;
+    var radius = this.protectiveShieldRadius;
+    
+    // Check all asteroids
+    for (var i = 0; i < Game.sprites.length; i++) {
+      var sprite = Game.sprites[i];
+      if (sprite.name === 'asteroid' && sprite.visible) {
+        var dx = sprite.x - shieldX;
+        var dy = sprite.y - shieldY;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < radius + 20) { // Shield radius + asteroid buffer
+          // Destroy asteroid
+          Game.explosionAt(sprite.x, sprite.y);
+          sprite.die();
+        }
+      }
+    }
+  };
+
+  /**
    * Handle collision with another sprite
    * @param {Sprite} other - Colliding sprite
    */
@@ -221,6 +258,11 @@ var Ship = function () {
     
     // Immune during hyperspace invulnerability
     if (this.hyperspaceInvulnerable > 0) {
+      return;
+    }
+    
+    // Immune during protective shield
+    if (this.protectiveShield > 0) {
       return;
     }
     
@@ -306,6 +348,10 @@ var Ship = function () {
     this.hyperspaceInvulnerable = GAME_CONFIG.ship.hyperspaceInvulnerability;
     this.hyperspaceCooldown = 60; // 1.0s cooldown per flowchart spec
     
+    // Activate protective shield for 3 seconds on teleport
+    this.protectiveShield = 180; // 3 seconds at 60fps
+    this.protectiveShieldRadius = 80;
+    
     // Play sound
     SFX.hyperspace();
   };
@@ -388,6 +434,42 @@ Ship.prototype.draw = function () {
     ctx.closePath();
     ctx.stroke();
 
+    ctx.restore();
+  }
+  
+  // Draw protective shield ring if active
+  if (this.protectiveShield > 0) {
+    ctx.save();
+    
+    var shieldAlpha = Math.min(1, this.protectiveShield / 60); // Fade out in last second
+    var pulseSpeed = 0.15;
+    var pulse = 0.7 + Math.sin(Date.now() * pulseSpeed * 0.01) * 0.3;
+    
+    // Outer glow ring
+    ctx.beginPath();
+    ctx.arc(0, 0, this.protectiveShieldRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = '#1FD9FE';
+    ctx.lineWidth = 3 * pulse;
+    ctx.globalAlpha = shieldAlpha * 0.8 * pulse;
+    ctx.shadowColor = '#1FD9FE';
+    ctx.shadowBlur = 20;
+    ctx.stroke();
+    
+    // Inner ring
+    ctx.beginPath();
+    ctx.arc(0, 0, this.protectiveShieldRadius * 0.9, 0, Math.PI * 2);
+    ctx.strokeStyle = '#1FD9FE';
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = shieldAlpha * 0.4;
+    ctx.stroke();
+    
+    // Fill with subtle glow
+    ctx.beginPath();
+    ctx.arc(0, 0, this.protectiveShieldRadius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(31, 217, 254, 0.1)';
+    ctx.globalAlpha = shieldAlpha * pulse;
+    ctx.fill();
+    
     ctx.restore();
   }
 };

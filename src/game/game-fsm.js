@@ -127,6 +127,10 @@ var GameFSM = {
     Game.ship.vel.x = 0;
     Game.ship.vel.y = 0;
     
+    // Activate protective shield for 3 seconds on respawn
+    Game.ship.protectiveShield = 180; // 3 seconds at 60fps
+    Game.ship.protectiveShieldRadius = 80;
+    
     // Immediately transition to run state (no waiting)
     this.state = 'run';
   },
@@ -186,6 +190,11 @@ var GameFSM = {
         }
         // Hide Silo during level transition - don't let it chase during warp
         if (Game.sprites[i].name == 'silo') {
+          Game.sprites[i].visible = false;
+          Game.sprites[i].die();
+        }
+        // Clear all data fragments on level advance
+        if (Game.sprites[i].name == 'datafragment') {
           Game.sprites[i].visible = false;
           Game.sprites[i].die();
         }

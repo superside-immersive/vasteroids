@@ -71,6 +71,10 @@ var Silo = function() {
         targetX = (Game.ship.x + DASEMode.turret.x) / 2;
         targetY = (Game.ship.y + DASEMode.turret.y) / 2;
       }
+    } else if (Game.ship && Game.ship.visible) {
+      // DASE NOT ACTIVE: Hunt the player ship instead of staying still
+      targetX = Game.ship.x;
+      targetY = Game.ship.y;
     }
     
     // Direction to target
