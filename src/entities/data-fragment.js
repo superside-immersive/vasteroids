@@ -77,6 +77,10 @@ var DataFragment = function() {
       if (window.DASEMode) {
         DASEMode.addFragment(1);
         SFX.fragmentCollect();
+        // Track stats
+        if (Game.stats) {
+          Game.stats.fragmentsCollected++;
+        }
       }
       this.die();
     }

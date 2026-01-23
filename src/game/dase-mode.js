@@ -320,6 +320,11 @@ var DASEMode = (function() {
       silosSpawnedThisDASE = 0;
       siloKillTime = 0;
       
+      // Track stats
+      if (Game.stats) {
+        Game.stats.daseActivations++;
+      }
+      
       // Spawn turret
       turret = new Turret();
       this.turret = turret;

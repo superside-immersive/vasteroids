@@ -251,6 +251,11 @@ var Ship = function () {
     
     Game.hyperspaceJumps--;
     
+    // Track stats
+    if (Game.stats) {
+      Game.stats.hyperspaceUsed++;
+    }
+    
     // Store old position for departure effect
     var oldX = this.x;
     var oldY = this.y;

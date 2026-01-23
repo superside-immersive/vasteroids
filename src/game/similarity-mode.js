@@ -99,7 +99,8 @@ var SimilarityMode = (function() {
       for (var i = 0; i < Game.sprites.length; i++) {
         var sprite = Game.sprites[i];
         if (sprite.name === 'asteroid' && sprite.visible && sprite.charCount < 50) {
-          Game.score += 100;
+          Game.score += 1000;
+          if (Game.stats) Game.stats.similarityBonus += 1000;
           Game.explosionAt(sprite.x, sprite.y);
           sprite.die();
         }

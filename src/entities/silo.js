@@ -31,7 +31,7 @@ var Silo = function() {
   this.hitFlashTimer = 0;
   
   // Score value
-  this.scoreValue = 500;
+  this.scoreValue = 5000;
   
   /**
    * Pre-move - erratic movement toward beam OR fleeing after severing
@@ -201,6 +201,12 @@ var Silo = function() {
         // Destroyed - give rewards
         Game.score += this.scoreValue;
         Game.explosionAt(this.x, this.y);
+        
+        // Track stats
+        if (Game.stats) {
+          Game.stats.silosDestroyed++;
+          Game.stats.silosScore += this.scoreValue;
+        }
         
         // Drop guaranteed fragments (3 per flowchart spec)
         for (var i = 0; i < 3; i++) {

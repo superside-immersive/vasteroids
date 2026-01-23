@@ -34,7 +34,7 @@ var Scoreboard = (function() {
       scores.push({
         id: 'placeholder-' + i,
         name: placeholderNames[i % placeholderNames.length],
-        score: 15000 - (i * 120) - Math.floor(Math.random() * 200)
+        score: 150000 - (i * 1200) - Math.floor(Math.random() * 2000)
       });
     }
   }
@@ -252,6 +252,22 @@ var Scoreboard = (function() {
 
   function getLastEntryId() { return lastAddedId; }
 
+  // Check if a score would be a new high score (top 1)
+  function isHighScore(score) {
+    if (scores.length === 0) return true;
+    return score > scores[0].score;
+  }
+
+  // Check what position a score would get
+  function getPositionForScore(score) {
+    for (var i = 0; i < scores.length; i++) {
+      if (score > scores[i].score) {
+        return i + 1;
+      }
+    }
+    return scores.length + 1;
+  }
+
   return {
     init: init,
     ensureInit: ensureInit,
@@ -262,6 +278,8 @@ var Scoreboard = (function() {
     render: render,
     startAutoShow: startAutoShow,
     stopAutoShow: stopAutoShow,
-    getLastEntryId: getLastEntryId
+    getLastEntryId: getLastEntryId,
+    isHighScore: isHighScore,
+    getPositionForScore: getPositionForScore
   };
 })();

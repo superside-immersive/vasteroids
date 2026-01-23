@@ -78,7 +78,7 @@ var GAME_CONFIG = {
     bulletCooldown: 22,
     bulletCount: 3,
     spawnDelayMs: 30000,
-    scoreValue: 200
+    scoreValue: 2000
   },
 
   // Asteroid settings
@@ -86,7 +86,7 @@ var GAME_CONFIG = {
     minSplitChars: 12,
     tripleSplitThreshold: 36,
     fragmentRadiusMultiplier: 0.65,
-    scorePerChar: 5,
+    scorePerChar: 50,
     fragmentDropChance: 0.30  // 30% per flowchart spec
   },
 
@@ -95,7 +95,7 @@ var GAME_CONFIG = {
   // Gameplay settings
   gameplay: {
     startingLives: 3,
-    extraLifeScore: 10000,
+    extraLifeScore: 100000,
     initialAsteroidCount: 5,
     maxAsteroidCount: 12
   }

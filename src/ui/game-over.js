@@ -180,6 +180,12 @@ var GameOverUI = (function() {
     entryRow.appendChild(divider);
     entryRow.appendChild(inputSection);
 
+    // Score breakdown section
+    var breakdownSection = document.createElement('div');
+    breakdownSection.className = 'score-breakdown';
+    breakdownSection.id = 'score-breakdown';
+    breakdownSection.innerHTML = '<div class="breakdown-title">SCORE BREAKDOWN</div><div class="breakdown-content" id="breakdown-content"></div>';
+
     submitBtn = document.createElement('div');
     submitBtn.className = 'prompt-pill submit-btn';
     submitBtn.textContent = 'SAVE SCORE';
@@ -192,6 +198,7 @@ var GameOverUI = (function() {
     hint.style.display = 'none';
 
     panel.appendChild(title);
+    panel.appendChild(breakdownSection);
     panel.appendChild(entryRow);
     panel.appendChild(submitBtn);
     panel.appendChild(hint);
@@ -271,6 +278,88 @@ var GameOverUI = (function() {
     scanLine.style.display = 'block';
     // Restart scanning
     startScanning();
+  }
+
+  function updateBreakdown(totalScore, position) {
+    var content = document.getElementById('breakdown-content');
+    if (!content) return;
+    
+    var stats = (window.Game && Game.stats) ? Game.stats : {};
+    var html = '';
+    
+    // Total score with position
+    html += '<div class="breakdown-row total-row">';
+    html += '<span class="breakdown-label">TOTAL SCORE</span>';
+    html += '<span class="breakdown-value">' + formatNumber(totalScore) + '</span>';
+    html += '</div>';
+    
+    // Position indicator
+    html += '<div class="breakdown-row position-row">';
+    html += '<span class="breakdown-label">RANK</span>';
+    html += '<span class="breakdown-value rank-' + (position <= 3 ? position : 'other') + '">#' + position + '</span>';
+    html += '</div>';
+    
+    html += '<div class="breakdown-divider"></div>';
+    
+    // Waves completed
+    html += '<div class="breakdown-row">';
+    html += '<span class="breakdown-label">WAVES COMPLETED</span>';
+    html += '<span class="breakdown-value">' + (stats.wavesCompleted || 0) + '</span>';
+    html += '</div>';
+    
+    // Asteroids destroyed
+    if (stats.asteroidsDestroyed) {
+      html += '<div class="breakdown-row">';
+      html += '<span class="breakdown-label">ASTEROIDS (' + stats.asteroidsDestroyed + ')</span>';
+      html += '<span class="breakdown-value">+' + formatNumber(stats.asteroidsScore || 0) + '</span>';
+      html += '</div>';
+    }
+    
+    // Silos destroyed
+    if (stats.silosDestroyed) {
+      html += '<div class="breakdown-row">';
+      html += '<span class="breakdown-label">LATENCY DRONES (' + stats.silosDestroyed + ')</span>';
+      html += '<span class="breakdown-value">+' + formatNumber(stats.silosScore || 0) + '</span>';
+      html += '</div>';
+    }
+    
+    // Similarity bonus
+    if (stats.similarityBonus) {
+      html += '<div class="breakdown-row bonus-row">';
+      html += '<span class="breakdown-label">SIMILARITY BONUS</span>';
+      html += '<span class="breakdown-value">+' + formatNumber(stats.similarityBonus) + '</span>';
+      html += '</div>';
+    }
+    
+    html += '<div class="breakdown-divider"></div>';
+    
+    // Items collected
+    html += '<div class="breakdown-row">';
+    html += '<span class="breakdown-label">FRAGMENTS COLLECTED</span>';
+    html += '<span class="breakdown-value">' + (stats.fragmentsCollected || 0) + '</span>';
+    html += '</div>';
+    
+    // DASE activations
+    if (stats.daseActivations) {
+      html += '<div class="breakdown-row">';
+      html += '<span class="breakdown-label">DASE ACTIVATIONS</span>';
+      html += '<span class="breakdown-value">' + stats.daseActivations + '</span>';
+      html += '</div>';
+    }
+    
+    // Hyperspace used
+    if (stats.hyperspaceUsed) {
+      html += '<div class="breakdown-row">';
+      html += '<span class="breakdown-label">HYPERSPACE JUMPS</span>';
+      html += '<span class="breakdown-value">' + stats.hyperspaceUsed + '</span>';
+      html += '</div>';
+    }
+    
+    content.innerHTML = html;
+  }
+  
+  function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
   function addKeyHandler() {
@@ -389,7 +478,27 @@ var GameOverUI = (function() {
     confirmPanel.classList.add('hidden');
     removeKeyHandler();
 
-    Animations.staggerLetters(title, 'CAPACITY REACHED', { duration: 520 });
+    // Check for high score
+    var isHighScore = window.Scoreboard && Scoreboard.isHighScore(scoreValue);
+    var position = window.Scoreboard ? Scoreboard.getPositionForScore(scoreValue) : 1;
+    
+    // Build title based on high score status
+    var titleText = isHighScore ? 'NEW HIGH SCORE!' : 'CAPACITY REACHED';
+    
+    Animations.staggerLetters(title, titleText, { duration: 520 });
+    
+    // Show high score celebration or regular title
+    if (isHighScore) {
+      title.style.color = '#FFBC42';
+      title.classList.add('high-score-glow');
+    } else {
+      title.style.color = '';
+      title.classList.remove('high-score-glow');
+    }
+    
+    // Update breakdown display
+    updateBreakdown(scoreValue, position);
+    
     Animations.fadeIn(panel, { duration: 420 });
 
     // Start QR scanning automatically

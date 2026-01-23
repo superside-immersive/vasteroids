@@ -10,11 +10,24 @@ var Game = {
   currentWave: 1,
   hyperspaceJumps: 3,
 
+  // Stats tracking for score breakdown
+  stats: {
+    asteroidsDestroyed: 0,
+    asteroidsScore: 0,
+    fragmentsCollected: 0,
+    silosDestroyed: 0,
+    silosScore: 0,
+    daseActivations: 0,
+    similarityBonus: 0,
+    wavesCompleted: 0,
+    hyperspaceUsed: 0
+  },
+
   // Fractal upgrade state (triples visual ship clones per level)
   upgradeLevel: 0,
   upgradeHits: 0,
   upgradeMaxLevel: 3,
-  upgradeStepScore: 1000,
+  upgradeStepScore: 10000,
 
   canvasWidth: 800,
   canvasHeight: 600,
@@ -38,6 +51,19 @@ var Game = {
     this.hyperspaceJumps = 3;
     this.upgradeLevel = 0;
     this.upgradeHits = 0;
+    
+    // Reset stats for new game
+    this.stats = {
+      asteroidsDestroyed: 0,
+      asteroidsScore: 0,
+      fragmentsCollected: 0,
+      silosDestroyed: 0,
+      silosScore: 0,
+      daseActivations: 0,
+      similarityBonus: 0,
+      wavesCompleted: 0,
+      hyperspaceUsed: 0
+    };
     
     // Initialize DASE and Similarity systems
     if (window.DASEMode) DASEMode.init();

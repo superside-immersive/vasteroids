@@ -456,7 +456,13 @@ var Asteroid = function () {
       : 1;
     
     if (other.name == "bullet" || other.name == "turretbullet") {
-      Game.score += Math.floor(GAME_CONFIG.asteroid.scorePerChar * this.charCount * scoreMultiplier);
+      var asteroidScore = Math.floor(GAME_CONFIG.asteroid.scorePerChar * this.charCount * scoreMultiplier);
+      Game.score += asteroidScore;
+      // Track stats
+      if (Game.stats) {
+        Game.stats.asteroidsDestroyed++;
+        Game.stats.asteroidsScore += asteroidScore;
+      }
     }
 
     // Split into smaller clusters (lower threshold so it always subdivides)

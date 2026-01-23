@@ -198,6 +198,11 @@ var GameFSM = {
         // Spawn near center of screen
         spawnSimilarityPickup(Game.canvasWidth / 2, Game.canvasHeight / 2);
       }
+      
+      // Track wave completion
+      if (Game.stats) {
+        Game.stats.wavesCompleted++;
+      }
     }
     var hold = (window.LevelTransitionManager ? 2000 : 1000); // Reduced to ~2s per flowchart spec
     if ((Date.now() - this.timer > hold) && (!window.LevelTransitionManager || !LevelTransitionManager.isActive())) {
