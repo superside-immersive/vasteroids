@@ -290,22 +290,9 @@ var Ship = function () {
     this.vel.x = 0;
     this.vel.y = 0;
     
-    // Clear small safety radius around landing point (per flowchart spec)
-    // Only destroys asteroids within ~50px to prevent spawn-kill without being a "panic nuke"
-    var safetyRadius = 50;
-    for (var i = 0; i < Game.sprites.length; i++) {
-      var sprite = Game.sprites[i];
-      if (sprite.name === 'asteroid' && sprite.visible) {
-        var dx = sprite.x - safeX;
-        var dy = sprite.y - safeY;
-        var distToLanding = Math.sqrt(dx*dx + dy*dy);
-        if (distToLanding < safetyRadius) {
-          // Destroy asteroid in safety zone (no score, no fragments - just clearance)
-          Game.explosionAt(sprite.x, sprite.y);
-          sprite.die();
-        }
-      }
-    }
+    // Create shockwave effect that clears asteroids in radius (visible feedback)
+    var safetyRadius = 80;
+    Game.shockwaveAt(safeX, safeY, safetyRadius, '#06D69F');
     
     // Create arrival particles
     this.createHyperspaceEffect(safeX, safeY, 'arrival');

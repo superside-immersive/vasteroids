@@ -41,11 +41,11 @@ var DASEMode = (function() {
     this.baseOrbitSpeed = 0.04;
     
     this.fireTimer = 0;
-    this.fireRate = 18; // Slower shooting for balance
-    this.baseFireRate = 18;
+    this.fireRate = 10; // Balanced fire rate (was 18 - too slow)
+    this.baseFireRate = 10;
     
     this.bullets = [];
-    this.maxBullets = 10; // Reduced bullet pool
+    this.maxBullets = 20; // More bullets for better coverage
     
     // Initialize bullet pool
     for (var i = 0; i < this.maxBullets; i++) {

@@ -262,6 +262,11 @@ $(function () {
     if (Game.hyperspaceParticles && Game.hyperspaceParticles.length > 0) {
       drawHyperspaceParticles(context);
     }
+    
+    // Draw shockwave effects (spawn/teleport visual feedback)
+    if (Game.updateShockwaves) {
+      Game.updateShockwaves(context);
+    }
 
     // Level transition overlay
     if (window.LevelTransitionManager) {

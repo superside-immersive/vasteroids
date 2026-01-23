@@ -114,30 +114,18 @@ var GameFSM = {
     Game.ship.x = Game.canvasWidth / 2;
     Game.ship.y = Game.canvasHeight / 2;
 
-    // Clear asteroids in spawn radius to prevent instant death
-    var spawnClearRadius = 80;
-    for (var i = 0; i < Game.sprites.length; i++) {
-      var sprite = Game.sprites[i];
-      if (sprite.name === 'asteroid' && sprite.visible) {
-        var dx = sprite.x - Game.ship.x;
-        var dy = sprite.y - Game.ship.y;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < spawnClearRadius) {
-          Game.explosionAt(sprite.x, sprite.y);
-          sprite.die();
-        }
-      }
-    }
+    // Create shockwave effect that clears asteroids (visible feedback)
+    var spawnClearRadius = 100;
+    Game.shockwaveAt(Game.ship.x, Game.ship.y, spawnClearRadius, '#1FD9FE');
 
     // Keep ship visible immediately; state gate controls when it can move/shoot.
     Game.ship.visible = true;
+    Game.ship.rot = 0;
+    Game.ship.vel.x = 0;
+    Game.ship.vel.y = 0;
     
-    if (Game.ship.isClear()) {
-      Game.ship.rot = 0;
-      Game.ship.vel.x = 0;
-      Game.ship.vel.y = 0;
-      this.state = 'run';
-    }
+    // Immediately transition to run state (no waiting)
+    this.state = 'run';
   },
 
   /**
@@ -192,6 +180,11 @@ var GameFSM = {
         if (Game.sprites[i].name == 'alienbullet') {
           Game.sprites[i].visible = false;
         }
+        // Hide Silo during level transition - don't let it chase during warp
+        if (Game.sprites[i].name == 'silo') {
+          Game.sprites[i].visible = false;
+          Game.sprites[i].die();
+        }
       }
       // Push next UFO spawn a bit so it won't pop in right after transition
       Game.nextBigAlienTime = Date.now() + 12000;
@@ -235,7 +228,8 @@ var GameFSM = {
         this.timer = Date.now();
       }
       
-      if (Date.now() - this.timer > 1000) {
+      // Reduced delay for faster respawn (300ms instead of 1000ms)
+      if (Date.now() - this.timer > 300) {
         this.timer = null;
         this.state = 'spawn_ship';
       }

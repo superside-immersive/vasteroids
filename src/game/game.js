@@ -92,5 +92,85 @@ var Game = {
     splosion.y = y;
     splosion.visible = true;
     Game.sprites.push(splosion);
+  },
+  
+  /**
+   * Create expanding shockwave effect that clears asteroids
+   * @param {number} x - Center X position
+   * @param {number} y - Center Y position  
+   * @param {number} radius - Radius to clear
+   * @param {string} color - Color of the shockwave
+   */
+  shockwaveAt: function(x, y, radius, color) {
+    color = color || '#1FD9FE';
+    radius = radius || 80;
+    
+    // Create shockwave visual effect
+    if (!this.shockwaves) this.shockwaves = [];
+    this.shockwaves.push({
+      x: x,
+      y: y,
+      radius: 0,
+      maxRadius: radius,
+      alpha: 1,
+      color: color,
+      lineWidth: 4
+    });
+    
+    // Destroy asteroids in radius
+    for (var i = 0; i < this.sprites.length; i++) {
+      var sprite = this.sprites[i];
+      if (sprite.name === 'asteroid' && sprite.visible) {
+        var dx = sprite.x - x;
+        var dy = sprite.y - y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < radius) {
+          this.explosionAt(sprite.x, sprite.y);
+          sprite.die();
+        }
+      }
+    }
+  },
+  
+  /**
+   * Update and render shockwaves
+   */
+  updateShockwaves: function(ctx) {
+    if (!this.shockwaves) return;
+    
+    for (var i = this.shockwaves.length - 1; i >= 0; i--) {
+      var sw = this.shockwaves[i];
+      
+      // Expand shockwave
+      sw.radius += 8;
+      sw.alpha = 1 - (sw.radius / sw.maxRadius);
+      sw.lineWidth = Math.max(1, 4 * sw.alpha);
+      
+      // Draw shockwave ring
+      if (sw.alpha > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = sw.lineWidth;
+        ctx.globalAlpha = sw.alpha;
+        ctx.shadowColor = sw.color;
+        ctx.shadowBlur = 15;
+        ctx.stroke();
+        
+        // Inner glow ring
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius * 0.8, 0, Math.PI * 2);
+        ctx.globalAlpha = sw.alpha * 0.3;
+        ctx.lineWidth = sw.lineWidth * 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+      
+      // Remove finished shockwaves
+      if (sw.radius >= sw.maxRadius) {
+        this.shockwaves.splice(i, 1);
+      }
+    }
   }
 };
