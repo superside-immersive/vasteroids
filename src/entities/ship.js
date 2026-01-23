@@ -230,7 +230,7 @@ var Ship = function () {
     }
 
     // Collision = lose a life immediately (no shields/upgrades)
-    SFX.explosion();
+    SFX.playerDeath();
     Game.explosionAt(this.x, this.y);
     // Drop DASE turret on death
     if (window.DASEMode && typeof DASEMode.isActive === 'function' && DASEMode.isActive()) {

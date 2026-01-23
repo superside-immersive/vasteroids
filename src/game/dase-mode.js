@@ -382,6 +382,9 @@ var DASEMode = (function() {
       
       // Bonus time
       duration += 300; // +5 seconds
+      
+      // Play sound
+      SFX.beamRestored();
     },
     
     /**
@@ -415,6 +418,7 @@ var DASEMode = (function() {
           silo.spawn();
           silosSpawnedThisDASE++;
           siloSpawnTimer = -1;
+          SFX.siloSpawn();
         }
       }
       

@@ -104,6 +104,9 @@ var GameFSM = {
 
     Game.nextBigAlienTime = Date.now() + 30000 + (30000 * Math.random());
 
+    // Play game start sound
+    SFX.gameStart();
+    
     this.state = 'spawn_ship';
   },
 
@@ -152,6 +155,7 @@ var GameFSM = {
     }
     
     if (!asteroidsExist) {
+      SFX.waveComplete();
       this.state = 'new_level';
     }
 

@@ -1,11 +1,28 @@
 /**
  * Sound Effects Manager
  * Handles audio loading and playback
+ * 
+ * Sound effects from "The Essential Retro Video Game Sound Effects Collection"
+ * by Juhani Junkala (CC0 License) - https://opengameart.org
  */
 
 var SFX = {
-  laser:     new Audio('assets/audio/39459__THE_bizniss__laser.wav'),
-  explosion: new Audio('assets/audio/51467__smcameron__missile_explosion.wav'),
+  // Original sounds
+  laser:              new Audio('assets/audio/39459__THE_bizniss__laser.wav'),
+  explosion:          new Audio('assets/audio/51467__smcameron__missile_explosion.wav'),
+  
+  // New sounds
+  hyperspaceAudio:    new Audio('assets/audio/hyperspace.wav'),
+  fragmentAudio:      new Audio('assets/audio/fragment_collect.wav'),
+  daseAudio:          new Audio('assets/audio/dase_activate.wav'),
+  beamSeveredAudio:   new Audio('assets/audio/beam_severed.wav'),
+  beamRestoredAudio:  new Audio('assets/audio/beam_restored.wav'),
+  similarityAudio:    new Audio('assets/audio/similarity_activate.wav'),
+  siloAudio:          new Audio('assets/audio/silo_spawn.wav'),
+  waveCompleteAudio:  new Audio('assets/audio/wave_complete.wav'),
+  playerDeathAudio:   new Audio('assets/audio/player_death.wav'),
+  gameStartAudio:     new Audio('assets/audio/game_start.wav'),
+  
   muted: false,
   _unlocked: false,
   unlock: function () {
@@ -28,52 +45,24 @@ var SFX = {
       }
     }
     SFX._unlocked = true;
-  },
-  
-  // Placeholder methods for new sounds (use existing sounds as fallback)
-  fragmentCollect: function() {
-    // TODO: Add unique "ping" sound for fragment collection
-    // For now, use a quieter laser sound
-    if (this.muted) return;
-  },
-  
-  daseActivate: function() {
-    // TODO: Add "power-up hum" sound
-    if (this.muted) return;
-  },
-  
-  beamSevered: function() {
-    // TODO: Add "snap" sound
-    if (this.muted) return;
-    this.explosion();
-  },
-  
-  beamRestored: function() {
-    // TODO: Add "thunderclap" sound  
-    if (this.muted) return;
-  },
-  
-  similarityActivate: function() {
-    // TODO: Add "shimmer" sound
-    if (this.muted) return;
-  },
-  
-  hyperspace: function() {
-    // TODO: Add "warp" sound
-    if (this.muted) return;
-  },
-  
-  siloSpawn: function() {
-    // TODO: Add "warning beep" sound
-    if (this.muted) return;
   }
 };
 
 // Replace Audio objects with pooled play functions (limits concurrency to avoid clipping)
 (function() {
   var configs = {
-    laser: { max: 5, cooldown: 60, volume: 0.55 },
-    explosion: { max: 3, cooldown: 120, volume: 0.8 }
+    laser:              { max: 5, cooldown: 60, volume: 0.55 },
+    explosion:          { max: 3, cooldown: 120, volume: 0.8 },
+    hyperspaceAudio:    { max: 2, cooldown: 500, volume: 0.7 },
+    fragmentAudio:      { max: 6, cooldown: 30, volume: 0.5 },
+    daseAudio:          { max: 1, cooldown: 1000, volume: 0.75 },
+    beamSeveredAudio:   { max: 2, cooldown: 200, volume: 0.8 },
+    beamRestoredAudio:  { max: 2, cooldown: 200, volume: 0.65 },
+    similarityAudio:    { max: 1, cooldown: 500, volume: 0.7 },
+    siloAudio:          { max: 1, cooldown: 1000, volume: 0.5 },
+    waveCompleteAudio:  { max: 1, cooldown: 1000, volume: 0.75 },
+    playerDeathAudio:   { max: 2, cooldown: 300, volume: 0.85 },
+    gameStartAudio:     { max: 1, cooldown: 500, volume: 0.7 }
   };
 
   function makePool(base, config) {
@@ -129,3 +118,44 @@ var SFX = {
     }
   }
 })();
+
+// Convenience methods for playing sounds
+SFX.fragmentCollect = function() {
+  this.fragmentAudio();
+};
+
+SFX.daseActivate = function() {
+  this.daseAudio();
+};
+
+SFX.beamSevered = function() {
+  this.beamSeveredAudio();
+};
+
+SFX.beamRestored = function() {
+  this.beamRestoredAudio();
+};
+
+SFX.similarityActivate = function() {
+  this.similarityAudio();
+};
+
+SFX.hyperspace = function() {
+  this.hyperspaceAudio();
+};
+
+SFX.siloSpawn = function() {
+  this.siloAudio();
+};
+
+SFX.waveComplete = function() {
+  this.waveCompleteAudio();
+};
+
+SFX.playerDeath = function() {
+  this.playerDeathAudio();
+};
+
+SFX.gameStart = function() {
+  this.gameStartAudio();
+};
