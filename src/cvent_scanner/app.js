@@ -336,12 +336,12 @@ const App = {
      * Show attendee result
      */
     showResult(attendee, parsedData) {
-        const fullName = `${attendee.firstName || ''} ${attendee.lastName || ''}`.trim() || 'Sin nombre';
+        const fullName = `${attendee.firstName || ''} ${attendee.lastName || ''}`.trim() || 'No name';
         const initials = QRParser.getInitials(attendee);
         
         this.elements.attendeeName.textContent = fullName;
         this.elements.attendeeTitle.textContent = attendee.title || 'Sin título';
-        this.elements.attendeeCompany.textContent = attendee.company || 'Sin empresa';
+        this.elements.attendeeCompany.textContent = attendee.company || 'No company';
         this.elements.attendeeEmail.textContent = attendee.email || 'Sin email';
         this.elements.attendeeAvatar.textContent = initials;
         this.elements.qrFormat.textContent = `Formato: ${parsedData.format}`;
@@ -469,7 +469,7 @@ const App = {
 
         const html = history.map(item => {
             const initials = ((item.firstName?.[0] || '') + (item.lastName?.[0] || '')).toUpperCase() || '??';
-            const fullName = `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'Sin nombre';
+            const fullName = `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'No name';
             const timeAgo = StorageService.formatTimestamp(item.timestamp);
             
             return `
@@ -477,7 +477,7 @@ const App = {
                     <div class="history-avatar">${initials}</div>
                     <div class="history-info">
                         <div class="history-name">${fullName}</div>
-                        <div class="history-company">${item.company || 'Sin empresa'}</div>
+                        <div class="history-company">${item.company || 'No company'}</div>
                     </div>
                     <div class="history-time">${timeAgo}</div>
                 </div>

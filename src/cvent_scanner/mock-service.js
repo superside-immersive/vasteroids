@@ -5,49 +5,49 @@
  */
 
 const MockService = {
-    // Sample first names (Latin American)
+    // Sample first names
     firstNames: [
-        'María', 'José', 'Juan', 'Ana', 'Carlos', 'Laura', 'Luis', 'Sofía',
-        'Diego', 'Valentina', 'Martín', 'Camila', 'Alejandro', 'Isabella',
-        'Sebastián', 'Luciana', 'Mateo', 'Paula', 'Nicolás', 'Fernanda',
-        'Gabriel', 'Daniela', 'Fernando', 'Carolina', 'Ricardo', 'Gabriela',
-        'Andrés', 'Mariana', 'Pablo', 'Victoria'
+        'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda',
+        'David', 'Elizabeth', 'William', 'Barbara', 'Richard', 'Susan',
+        'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Christopher', 'Karen',
+        'Charles', 'Lisa', 'Daniel', 'Nancy', 'Matthew', 'Betty',
+        'Anthony', 'Margaret', 'Mark', 'Sandra'
     ],
 
-    // Sample last names (Latin American)
+    // Sample last names
     lastNames: [
-        'García', 'Rodríguez', 'Martínez', 'López', 'González', 'Hernández',
-        'Pérez', 'Sánchez', 'Ramírez', 'Torres', 'Flores', 'Rivera',
-        'Gómez', 'Díaz', 'Reyes', 'Morales', 'Cruz', 'Ortiz',
-        'Gutiérrez', 'Chávez', 'Ramos', 'Vargas', 'Castillo', 'Jiménez',
-        'Moreno', 'Romero', 'Alvarado', 'Ruiz', 'Mendoza', 'Fernández'
+        'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia',
+        'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez',
+        'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson',
+        'Martin', 'Lee', 'Thompson', 'White', 'Harris', 'Clark',
+        'Lewis', 'Robinson', 'Walker', 'Hall', 'Young', 'Allen'
     ],
 
     // Sample companies
     companies: [
-        'TechCorp Argentina', 'Innovación Digital SA', 'Grupo Empresarial Latino',
-        'Soluciones Cloud México', 'StartUp Hub Chile', 'Fintech Solutions',
+        'TechCorp Inc', 'Digital Innovation LLC', 'Global Enterprise Group',
+        'Cloud Solutions Co', 'StartUp Hub', 'Fintech Solutions',
         'Consulting Partners', 'Data Analytics Co', 'Software Factory',
-        'E-Commerce Solutions', 'Banco del Sur', 'Telecom Americas',
-        'Energía Renovable SA', 'Logística Express', 'Seguros Continental',
-        'Pharma Latina', 'Retail Group', 'Media Networks', 'Agro Tech',
-        'Universidad del Valle', 'Hospital Central', 'Fundación Avanzar'
+        'E-Commerce Solutions', 'First National Bank', 'Telecom Americas',
+        'Renewable Energy Corp', 'Express Logistics', 'Continental Insurance',
+        'Pharma Global', 'Retail Group', 'Media Networks', 'Agro Tech',
+        'Valley University', 'Central Hospital', 'Forward Foundation'
     ],
 
     // Sample titles
     titles: [
-        'CEO', 'CTO', 'CFO', 'Director de Marketing', 'Gerente de Ventas',
+        'CEO', 'CTO', 'CFO', 'Marketing Director', 'Sales Manager',
         'Product Manager', 'Software Engineer', 'Data Scientist',
-        'Director de Operaciones', 'Gerente General', 'VP de Innovación',
-        'Arquitecto de Soluciones', 'Consultor Senior', 'Analista de Negocios',
-        'Coordinador de Proyectos', 'Especialista en UX', 'DevOps Engineer',
-        'Gerente de RRHH', 'Director Comercial', 'Jefe de Desarrollo'
+        'Operations Director', 'General Manager', 'VP of Innovation',
+        'Solutions Architect', 'Senior Consultant', 'Business Analyst',
+        'Project Coordinator', 'UX Specialist', 'DevOps Engineer',
+        'HR Manager', 'Commercial Director', 'Development Lead'
     ],
 
     // Sample event names
     eventNames: [
-        'Tech Summit 2026', 'Innovación Empresarial', 'Digital Transformation Forum',
-        'Latam Business Conference', 'Startup Expo', 'Future of Work Summit'
+        'Tech Summit 2026', 'Business Innovation Forum', 'Digital Transformation Forum',
+        'Global Business Conference', 'Startup Expo', 'Future of Work Summit'
     ],
 
     /**
@@ -160,7 +160,7 @@ const MockService = {
         const firstName2 = this.firstNames[Math.floor(Math.random() * this.firstNames.length)];
         const lastName2 = this.lastNames[Math.floor(Math.random() * this.lastNames.length)];
 
-        const email3 = `${this.firstNames[Math.floor(Math.random() * this.firstNames.length)].toLowerCase()}.${this.lastNames[Math.floor(Math.random() * this.lastNames.length)].toLowerCase()}@empresa.com`
+        const email3 = `${this.firstNames[Math.floor(Math.random() * this.firstNames.length)].toLowerCase()}.${this.lastNames[Math.floor(Math.random() * this.lastNames.length)].toLowerCase()}@company.com`
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         return {

@@ -226,7 +226,7 @@ const StorageService = {
         const history = this.getHistory();
         if (history.length === 0) return '';
 
-        const headers = ['Timestamp', 'Nombre', 'Apellido', 'Email', 'Empresa', 'Título', 'Reference ID', 'Formato QR'];
+        const headers = ['Timestamp', 'First Name', 'Last Name', 'Email', 'Company', 'Title', 'Reference ID', 'QR Format'];
         const rows = history.map(h => [
             h.timestamp,
             h.firstName || '',

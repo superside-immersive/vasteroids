@@ -1,118 +1,118 @@
 # Cvent QR Scanner - Demo
 
-Aplicación web para escanear códigos QR de badges de eventos Cvent y mostrar información del asistente.
+Web application to scan QR codes from Cvent event badges and display attendee information.
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         index.html                               │
-│  - Layout con 4 tabs: Escáner, QR Prueba, Historial, Config     │
+│  - Layout with 4 tabs: Scanner, Test QR, History, Settings      │
 │  - CDN: html5-qrcode (scanner) + qrcodejs (generator)           │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                           app.js                                 │
-│  - Controlador principal                                         │
-│  - Maneja cámara, UI, tabs, eventos                             │
-│  - Orquesta parser → service → storage                          │
+│  - Main controller                                               │
+│  - Handles camera, UI, tabs, events                             │
+│  - Orchestrates parser → service → storage                      │
 └─────────────────────────────────────────────────────────────────┘
         │                       │                       │
         ▼                       ▼                       ▼
 ┌───────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │  qr-parser.js │    │  mock-service.js │    │   storage.js    │
 │               │    │                  │    │                 │
-│ Detecta y     │    │ Simula API       │    │ localStorage    │
-│ parsea 4      │    │ BadgeKit con     │    │ para historial  │
-│ formatos QR   │    │ datos latinos    │    │ y settings      │
-│ de Cvent      │    │ aleatorios       │    │                 │
+│ Detects and   │    │ Simulates        │    │ localStorage    │
+│ parses 4      │    │ BadgeKit API     │    │ for history     │
+│ Cvent QR      │    │ with random      │    │ and settings    │
+│ formats       │    │ mock data        │    │                 │
 └───────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-## 📁 Estructura de Archivos
+## 📁 File Structure
 
 ```
 cvent demo/
-├── index.html       # UI principal con 4 secciones
-├── styles.css       # Estilos responsive mobile-first
-├── app.js           # Lógica principal y controlador
-├── qr-parser.js     # Parser de los 4 formatos QR de Cvent
-├── mock-service.js  # Simulador de API con datos ficticios
-├── storage.js       # Persistencia en localStorage
-└── README.md        # Este archivo
+├── index.html       # Main UI with 4 sections
+├── styles.css       # Mobile-first responsive styles
+├── app.js           # Main logic and controller
+├── qr-parser.js     # Parser for 4 Cvent QR formats
+├── mock-service.js  # API simulator with mock data
+├── storage.js       # localStorage persistence
+└── README.md        # This file
 ```
 
-## 🔍 Formatos QR Soportados (qr-parser.js)
+## 🔍 Supported QR Formats (qr-parser.js)
 
-Cvent usa 4 formatos de QR en sus badges:
+Cvent uses 4 QR formats in their badges:
 
 ### 1. MeCard
 ```
-MECARD:CONF:2WBCTIXLFURQT;N:García,María;TEL:+54111234;EMAIL:maria@email.com;TITLE:Director;ORG:TechCorp;;
+MECARD:CONF:2WBCTIXLFURQT;N:Smith,Mary;TEL:+1555123;EMAIL:mary@email.com;TITLE:Director;ORG:TechCorp;;
 ```
-- `CONF:` = Reference ID
-- `N:` = Apellido,Nombre
-- `ORG:` = Empresa
+- \`CONF:\` = Reference ID
+- \`N:\` = LastName,FirstName
+- \`ORG:\` = Company
 
-### 2. Delimitado (separadores: ^ * % |)
+### 2. Delimited (separators: ^ * % |)
 ```
-J3NHHSZN2VK^Juan^Pérez^juan@email.com^Director^TechCorp^BuenosAires^^1425^+5411234
+J3NHHSZN2VK^John^Smith^john@email.com^Director^TechCorp^NewYork^^10001^+1555234
 ```
-Orden: RefID^Nombre^Apellido^Email^Título^Empresa^Ciudad^Estado^ZIP^Teléfono
+Order: RefID^FirstName^LastName^Email^Title^Company^City^State^ZIP^Phone
 
-### 3. Solo Email
+### 3. Email Only
 ```
-maria.garcia@empresa.com
+mary.smith@company.com
 ```
-Se usa el email como referenceId para lookup en API.
+The email is used as referenceId for API lookup.
 
-### 4. Solo Reference ID
+### 4. Reference ID Only
 ```
 2WBCTIXLFURQT
 ```
-Código alfanumérico de 5-20 caracteres.
+Alphanumeric code of 5-20 characters.
 
-## 🔄 Flujo de Escaneo
+## 🔄 Scan Flow
 
 ```
-1. Usuario presiona "Iniciar Escaneo"
+1. User presses "Start Scan"
    └── app.js → Html5Qrcode.start()
 
-2. Cámara detecta QR
+2. Camera detects QR
    └── onScanSuccess(decodedText)
 
-3. Parser analiza el texto
+3. Parser analyzes the text
    └── QRParser.parse(decodedText)
-   └── Retorna: { format, referenceId, firstName, lastName, email, company, title }
+   └── Returns: { format, referenceId, firstName, lastName, email, company, title }
 
-4. Lookup de asistente
-   ├── Modo Demo: MockService.lookupAttendee()
-   │   └── Genera datos ficticios basados en referenceId como seed
-   └── Modo Real: callBadgeKitAPI()
+4. Attendee lookup
+   ├── Demo Mode: MockService.lookupAttendee()
+   │   └── Generates mock data based on referenceId as seed
+   └── Real Mode: callBadgeKitAPI()
        └── GET https://io.cvent.com/onsite/v1/events/{eventId}/exhibitors/{exhibitorId}/attendees/{refId}
 
-5. Mostrar resultado
+5. Show result
    └── showResult(attendee, parsedData)
    └── StorageService.addToHistory()
 ```
 
-## ⚙️ Configuración (storage.js)
+## ⚙️ Configuration (storage.js)
 
-```javascript
-// Estructura de settings en localStorage
+\`\`\`javascript
+// Settings structure in localStorage
 {
-  demoMode: true,          // true = usa MockService, false = usa API real
-  eventId: "",             // ID del evento en Cvent
-  exhibitorId: "",         // ID del expositor
-  bearerToken: "",         // Token de autenticación
+  demoMode: true,          // true = use MockService, false = use real API
+  eventId: "",             // Cvent event ID
+  exhibitorId: "",         // Exhibitor ID
+  bearerToken: "",         // Authentication token
   region: "na"             // "na" = io.cvent.com, "eu" = io-eur.cvent.com
 }
-```
+\`\`\`
 
-## 🌐 API Real de Cvent (BadgeKit)
+## 🌐 Real Cvent API (BadgeKit)
 
-Cuando `demoMode: false`, la app llama:
+When \`demoMode: false\`, the app calls:
 
 ```
 GET https://io.cvent.com/onsite/v1/events/{eventId}/exhibitors/{exhibitorId}/attendees/{referenceId}
@@ -121,72 +121,50 @@ Headers:
   Content-Type: application/json
 ```
 
-Respuesta:
-```json
+Response:
+\`\`\`json
 {
-  "firstName": "María",
-  "lastName": "García",
-  "email": "maria@empresa.com",
+  "firstName": "Mary",
+  "lastName": "Smith",
+  "email": "mary@company.com",
   "company": "TechCorp",
   "title": "Director",
-  "workPhone": "+5411...",
+  "workPhone": "+1555...",
   "customFields": [...]
 }
-```
+\`\`\`
 
-**Requisitos para API real:**
-- Credenciales de Account Manager de Cvent
-- Evento con BadgeKit habilitado
-- Asistentes con consentimiento de escaneo
+**Requirements for real API:**
+- Credentials from Cvent Account Manager
+- Event with BadgeKit enabled
+- Attendees with scan consent
 
-## 🧪 QR de Prueba (mock-service.js)
+## 🧪 Test QR Codes (mock-service.js)
 
-La pestaña "QR de Prueba" genera códigos QR escaneables en los 4 formatos.
-- Usa `MockService.generateTestQRData()` 
-- Los datos son aleatorios pero consistentes (seeded random basado en referenceId)
-- Nombres latinoamericanos realistas
+The "Test QR" tab generates scannable QR codes in all 4 formats.
+- Uses \`MockService.generateTestQRData()\` 
+- Data is random but consistent (seeded random based on referenceId)
+- Realistic English names
 
-## 📱 Ejecución
+## 📱 Running
 
-```bash
-# Servidor local (Python)
+\`\`\`bash
+# Local server (Python)
 cd "cvent demo"
 python3 -m http.server 8080
 
-# Abrir en navegador
+# Open in browser
 http://localhost:8080
 
-# Desde celular (misma red WiFi)
+# From mobile (same WiFi network)
 http://192.168.x.x:8080
-```
+\`\`\`
 
-## 🔧 Para Modificar
+## 🔧 To Modify
 
-### Agregar nuevos campos al resultado
-1. Editar `showResult()` en [app.js](app.js#L298)
-2. Agregar elementos HTML en [index.html](index.html#L45-L60)
+### Add new fields to result
+1. Edit \`showResult()\` in [app.js](app.js#L298)
+2. Add HTML elements in [index.html](index.html#L45-L60)
 
-### Cambiar datos mock
-1. Editar arrays en [mock-service.js](mock-service.js#L10-L45)
-2. Modificar `generateAttendee()` para nuevos campos
-
-### Soportar nuevo formato QR
-1. Agregar método `isXxxFormat()` en [qr-parser.js](qr-parser.js)
-2. Agregar método `parseXxx()` 
-3. Actualizar `parse()` para detectar el nuevo formato
-
-### Cambiar endpoint de API
-1. Modificar `getAPIConfig()` en [storage.js](storage.js#L130)
-2. Modificar `callBadgeKitAPI()` en [app.js](app.js#L265)
-
-## 📋 Dependencias (CDN)
-
-- **html5-qrcode v2.3.8**: Escaneo de QR via cámara WebRTC
-- **qrcodejs v1.0.0**: Generación de QR para pruebas
-
-## ⚠️ Notas Técnicas
-
-- El acceso a cámara requiere HTTPS o localhost
-- localStorage tiene límite ~5MB (suficiente para ~10k escaneos)
-- El parser prioriza formatos específicos (MeCard > Delimitado > Email > RefID)
-- Token de Cvent expira en 1 hora, implementar refresh si es necesario
+### Change mock data
+1. Edit arrays in [mock-service.js](mock-service.js#L10-L45)
