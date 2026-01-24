@@ -1135,7 +1135,7 @@ body {
   gap: 4px;
 }
 
-/* Base row animation */
+/* Base row - hidden state */
 .breakdown-row {
   display: flex;
   justify-content: space-between;
@@ -1143,10 +1143,61 @@ body {
   padding: 5px 10px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hidden state before reveal */
+.breakdown-row--hidden {
   opacity: 0;
-  transform: translateX(-20px);
-  animation: breakdownSlideIn 0.4s ease-out forwards;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transform: translateY(15px) scale(0.95);
+  filter: blur(4px);
+}
+
+/* Reveal animation */
+.breakdown-row--reveal {
+  animation: rowReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rowReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* Glow flash on reveal */
+.breakdown-row--reveal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, transparent, rgba(31, 217, 254, 0.3), transparent);
+  animation: rowGlowFlash 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rowGlowFlash {
+  0% {
+    opacity: 1;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
 }
 
 .breakdown-row:hover {
@@ -1154,19 +1205,26 @@ body {
   transform: scale(1.02);
 }
 
-@keyframes breakdownSlideIn {
-  0% {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Score rows with points */
+.breakdown-row--score {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Stat rows */
+.breakdown-row--stat {
+  position: relative;
+  background: transparent;
+}
+
+/* Bonus row */
+.breakdown-row--bonus {
+  position: relative;
 }
 
 /* Total row - prominent */
 .breakdown-row--total {
+  position: relative;
   background: linear-gradient(90deg, rgba(31, 217, 254, 0.15) 0%, rgba(31, 217, 254, 0.05) 100%);
   border: 1px solid rgba(31, 217, 254, 0.3);
   padding: 8px 12px;
@@ -1192,7 +1250,22 @@ body {
   font-weight: bold;
   color: #1FD9FE;
   text-shadow: 0 0 15px rgba(31, 217, 254, 0.5);
-  animation: scoreGlow 2s ease-in-out infinite;
+}
+
+/* Animated counter glow */
+.breakdown-row--total.breakdown-row--reveal .breakdown-value--total {
+  animation: scoreCountGlow 0.6s ease-out, scoreGlow 2s ease-in-out 0.6s infinite;
+}
+
+@keyframes scoreCountGlow {
+  0% { 
+    color: #fff;
+    text-shadow: 0 0 30px #fff, 0 0 60px #1FD9FE;
+  }
+  100% { 
+    color: #1FD9FE;
+    text-shadow: 0 0 15px rgba(31, 217, 254, 0.5);
+  }
 }
 
 .breakdown-rank {
@@ -1207,11 +1280,6 @@ body {
 @keyframes scoreGlow {
   0%, 100% { text-shadow: 0 0 15px rgba(31, 217, 254, 0.5); }
   50% { text-shadow: 0 0 25px rgba(31, 217, 254, 0.8), 0 0 35px rgba(31, 217, 254, 0.4); }
-}
-
-/* Score rows with points */
-.breakdown-row--score {
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .breakdown-row--score .breakdown-value--score {
@@ -1236,11 +1304,6 @@ body {
   color: #FFBC42 !important;
   font-weight: bold;
   text-shadow: 0 0 10px rgba(255, 188, 66, 0.4);
-}
-
-/* Stat rows */
-.breakdown-row--stat {
-  background: transparent;
 }
 
 .breakdown-label {

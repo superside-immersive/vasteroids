@@ -359,19 +359,19 @@ var GameOverUI = (function() {
       });
     }
     
-    // Clear and render with animations
+    // Clear and render with sequential animations
     content.innerHTML = '';
     
-    rows.forEach(function(row, index) {
+    // Create all elements first but hidden
+    var elements = rows.map(function(row, index) {
       var div = document.createElement('div');
-      div.className = 'breakdown-row breakdown-row--' + row.type;
-      div.style.animationDelay = (index * 80) + 'ms';
+      div.className = 'breakdown-row breakdown-row--' + row.type + ' breakdown-row--hidden';
       
       if (row.type === 'total') {
         div.innerHTML = 
           '<div class="breakdown-main">' +
             '<span class="breakdown-label">' + row.label + '</span>' +
-            '<span class="breakdown-value breakdown-value--total">' + row.value + '</span>' +
+            '<span class="breakdown-value breakdown-value--total"><span class="value-counter" data-target="' + totalScore + '">0</span></span>' +
           '</div>' +
           '<div class="breakdown-rank ' + row.rankClass + '">' + row.extra + '</div>';
       } else if (row.type === 'score') {
@@ -389,7 +389,61 @@ var GameOverUI = (function() {
       }
       
       content.appendChild(div);
+      return { element: div, row: row, index: index };
     });
+    
+    // Animate each row sequentially with sound tick
+    function revealRow(idx) {
+      if (idx >= elements.length) return;
+      
+      var item = elements[idx];
+      item.element.classList.remove('breakdown-row--hidden');
+      item.element.classList.add('breakdown-row--reveal');
+      
+      // Play tick sound for each reveal
+      if (window.SFX && SFX.play) {
+        SFX.play('tick');
+      }
+      
+      // For total row, animate the counter
+      if (item.row.type === 'total') {
+        var counter = item.element.querySelector('.value-counter');
+        if (counter) {
+          animateCounter(counter, 0, parseInt(counter.dataset.target), 600);
+        }
+      }
+      
+      // Schedule next row
+      setTimeout(function() {
+        revealRow(idx + 1);
+      }, 150);
+    }
+    
+    // Start reveal sequence after a brief delay
+    setTimeout(function() {
+      revealRow(0);
+    }, 200);
+  }
+  
+  // Animate counter from start to end
+  function animateCounter(element, start, end, duration) {
+    var startTime = null;
+    var diff = end - start;
+    
+    function step(timestamp) {
+      if (!startTime) startTime = timestamp;
+      var progress = Math.min((timestamp - startTime) / duration, 1);
+      // Easing: ease-out cubic
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var current = Math.floor(start + diff * eased);
+      element.textContent = formatNumber(current);
+      
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    }
+    
+    requestAnimationFrame(step);
   }
   
   function formatNumber(num) {
