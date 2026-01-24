@@ -285,77 +285,111 @@ var GameOverUI = (function() {
     if (!content) return;
     
     var stats = (window.Game && Game.stats) ? Game.stats : {};
-    var html = '';
     
-    // Total score with position
-    html += '<div class="breakdown-row total-row">';
-    html += '<span class="breakdown-label">TOTAL SCORE</span>';
-    html += '<span class="breakdown-value">' + formatNumber(totalScore) + '</span>';
-    html += '</div>';
+    // Build rows data array for sequential animation
+    var rows = [];
     
-    // Position indicator
-    html += '<div class="breakdown-row position-row">';
-    html += '<span class="breakdown-label">RANK</span>';
-    html += '<span class="breakdown-value rank-' + (position <= 3 ? position : 'other') + '">#' + position + '</span>';
-    html += '</div>';
-    
-    html += '<div class="breakdown-divider"></div>';
+    // Total score with position (combined row)
+    rows.push({
+      type: 'total',
+      label: 'TOTAL SCORE',
+      value: formatNumber(totalScore),
+      extra: '#' + position,
+      rankClass: position <= 3 ? 'rank-' + position : 'rank-other'
+    });
     
     // Waves completed
-    html += '<div class="breakdown-row">';
-    html += '<span class="breakdown-label">WAVES COMPLETED</span>';
-    html += '<span class="breakdown-value">' + (stats.wavesCompleted || 0) + '</span>';
-    html += '</div>';
+    rows.push({
+      type: 'stat',
+      label: 'WAVES',
+      value: stats.wavesCompleted || 0
+    });
     
     // Asteroids destroyed
     if (stats.asteroidsDestroyed) {
-      html += '<div class="breakdown-row">';
-      html += '<span class="breakdown-label">ASTEROIDS (' + stats.asteroidsDestroyed + ')</span>';
-      html += '<span class="breakdown-value">+' + formatNumber(stats.asteroidsScore || 0) + '</span>';
-      html += '</div>';
+      rows.push({
+        type: 'score',
+        label: 'ASTEROIDS',
+        count: stats.asteroidsDestroyed,
+        value: '+' + formatNumber(stats.asteroidsScore || 0)
+      });
     }
     
     // Silos destroyed
     if (stats.silosDestroyed) {
-      html += '<div class="breakdown-row">';
-      html += '<span class="breakdown-label">LATENCY DRONES (' + stats.silosDestroyed + ')</span>';
-      html += '<span class="breakdown-value">+' + formatNumber(stats.silosScore || 0) + '</span>';
-      html += '</div>';
+      rows.push({
+        type: 'score',
+        label: 'DRONES',
+        count: stats.silosDestroyed,
+        value: '+' + formatNumber(stats.silosScore || 0)
+      });
     }
     
     // Similarity bonus
     if (stats.similarityBonus) {
-      html += '<div class="breakdown-row bonus-row">';
-      html += '<span class="breakdown-label">SIMILARITY BONUS</span>';
-      html += '<span class="breakdown-value">+' + formatNumber(stats.similarityBonus) + '</span>';
-      html += '</div>';
+      rows.push({
+        type: 'bonus',
+        label: 'SIMILARITY',
+        value: '+' + formatNumber(stats.similarityBonus)
+      });
     }
     
-    html += '<div class="breakdown-divider"></div>';
-    
-    // Items collected
-    html += '<div class="breakdown-row">';
-    html += '<span class="breakdown-label">FRAGMENTS COLLECTED</span>';
-    html += '<span class="breakdown-value">' + (stats.fragmentsCollected || 0) + '</span>';
-    html += '</div>';
+    // Fragments collected
+    rows.push({
+      type: 'stat',
+      label: 'FRAGMENTS',
+      value: stats.fragmentsCollected || 0
+    });
     
     // DASE activations
     if (stats.daseActivations) {
-      html += '<div class="breakdown-row">';
-      html += '<span class="breakdown-label">DASE ACTIVATIONS</span>';
-      html += '<span class="breakdown-value">' + stats.daseActivations + '</span>';
-      html += '</div>';
+      rows.push({
+        type: 'stat',
+        label: 'DASE',
+        value: stats.daseActivations
+      });
     }
     
     // Hyperspace used
     if (stats.hyperspaceUsed) {
-      html += '<div class="breakdown-row">';
-      html += '<span class="breakdown-label">HYPERSPACE JUMPS</span>';
-      html += '<span class="breakdown-value">' + stats.hyperspaceUsed + '</span>';
-      html += '</div>';
+      rows.push({
+        type: 'stat',
+        label: 'HYPERSPACE',
+        value: stats.hyperspaceUsed
+      });
     }
     
-    content.innerHTML = html;
+    // Clear and render with animations
+    content.innerHTML = '';
+    
+    rows.forEach(function(row, index) {
+      var div = document.createElement('div');
+      div.className = 'breakdown-row breakdown-row--' + row.type;
+      div.style.animationDelay = (index * 80) + 'ms';
+      
+      if (row.type === 'total') {
+        div.innerHTML = 
+          '<div class="breakdown-main">' +
+            '<span class="breakdown-label">' + row.label + '</span>' +
+            '<span class="breakdown-value breakdown-value--total">' + row.value + '</span>' +
+          '</div>' +
+          '<div class="breakdown-rank ' + row.rankClass + '">' + row.extra + '</div>';
+      } else if (row.type === 'score') {
+        div.innerHTML = 
+          '<span class="breakdown-label">' + row.label + ' <span class="breakdown-count">×' + row.count + '</span></span>' +
+          '<span class="breakdown-value breakdown-value--score">' + row.value + '</span>';
+      } else if (row.type === 'bonus') {
+        div.innerHTML = 
+          '<span class="breakdown-label">' + row.label + '</span>' +
+          '<span class="breakdown-value breakdown-value--bonus">' + row.value + '</span>';
+      } else {
+        div.innerHTML = 
+          '<span class="breakdown-label">' + row.label + '</span>' +
+          '<span class="breakdown-value">' + row.value + '</span>';
+      }
+      
+      content.appendChild(div);
+    });
   }
   
   function formatNumber(num) {
