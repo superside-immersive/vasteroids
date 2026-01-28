@@ -348,8 +348,8 @@ var Ship = function () {
     this.hyperspaceInvulnerable = GAME_CONFIG.ship.hyperspaceInvulnerability;
     this.hyperspaceCooldown = 60; // 1.0s cooldown per flowchart spec
     
-    // Activate protective shield for 1.5 seconds on teleport
-    this.protectiveShield = 90; // 1.5 seconds at 60fps
+    // Activate protective shield for 3 seconds on teleport
+    this.protectiveShield = 180; // 3 seconds at 60fps
     this.protectiveShieldRadius = 56;
     
     // Play sound
