@@ -18,7 +18,69 @@ var CHAR_CACHE = {};
 var CHAR_CACHE_SIZE = 8; // display size in pixels
 var CHAR_CACHE_SCALE = 4; // render at 4x for crisp text
 
-function getCharSprite(char) {
+// Colored character cache for similarity mode
+var COLORED_CHAR_CACHE = {};
+
+function getCharSprite(char, color) {
+  // If color specified, use colored cache
+  if (color) {
+    var key = char + '_' + color;
+    if (COLORED_CHAR_CACHE[key]) return COLORED_CHAR_CACHE[key];
+    
+    var renderSize = CHAR_CACHE_SIZE * CHAR_CACHE_SCALE;
+    var glowPadding = renderSize * 0.8;
+    var canvasSize = renderSize * 2 + glowPadding * 2;
+    var canvas = document.createElement('canvas');
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    var ctx = canvas.getContext('2d');
+    
+    var centerX = canvasSize / 2;
+    var centerY = canvasSize / 2;
+    
+    ctx.font = 'bold ' + renderSize + 'px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Layer 1: Outer colored glow
+    ctx.shadowColor = color;
+    ctx.shadowBlur = renderSize * 1.2;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.01)';
+    ctx.fillText(char, centerX, centerY);
+    
+    // Layer 2: Medium colored glow
+    ctx.shadowColor = color;
+    ctx.shadowBlur = renderSize * 0.6;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.fillText(char, centerX, centerY);
+    
+    // Layer 3: Inner tight glow (brighter)
+    ctx.shadowColor = color;
+    ctx.shadowBlur = renderSize * 0.25;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.4;
+    ctx.fillText(char, centerX, centerY);
+    
+    // Layer 4: Core text - colored
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+    ctx.shadowBlur = renderSize * 0.08;
+    ctx.fillStyle = color;
+    ctx.fillText(char, centerX, centerY);
+    
+    // Layer 5: Highlight pass
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.fillText(char, centerX, centerY);
+    
+    COLORED_CHAR_CACHE[key] = canvas;
+    return canvas;
+  }
+  
+  // Original non-colored version
   if (CHAR_CACHE[char]) return CHAR_CACHE[char];
   
   var renderSize = CHAR_CACHE_SIZE * CHAR_CACHE_SCALE;
@@ -345,6 +407,17 @@ var Asteroid = function () {
     var x0 = this.x;
     var y0 = this.y;
     
+    // Apply compression scale during implosion
+    var compressionScale = this.compressionScale || 1;
+    radius *= compressionScale;
+    
+    // Get similarity color if active
+    var similarityColor = null;
+    if (this.similarityGroup && window.SimilarityMode && SimilarityMode.isActive()) {
+      var colors = SimilarityMode.getColors();
+      similarityColor = colors[this.similarityGroup];
+    }
+    
     // Scale factor: render high-res cache scaled down for crisp display
     // Account for glow padding in sprite size
     var renderSize = CHAR_CACHE_SIZE * CHAR_CACHE_SCALE;
@@ -352,6 +425,9 @@ var Asteroid = function () {
     var spriteSize = renderSize * 2 + glowPadding * 2;
     var halfSprite = spriteSize / 2;
     var baseScale = 1 / CHAR_CACHE_SCALE;
+    
+    // Apply compression to character scale
+    baseScale *= compressionScale;
 
     // Sort by Z depth for proper layering (back to front)
     var sortedChars = [];
@@ -387,6 +463,9 @@ var Asteroid = function () {
     // Sort back to front
     sortedChars.sort(function(a, b) { return a.z - b.z; });
 
+    // Vibration offset for implosion
+    var vibrationIntensity = this.vibrationIntensity || 0;
+
     // Render sorted
     for (var i = 0; i < sortedChars.length; i++) {
       var sc = sortedChars[i];
@@ -411,11 +490,20 @@ var Asteroid = function () {
       var minAlpha = 0.3 * alphaScale;
       ctx.globalAlpha = Math.min(1, Math.max(minAlpha, alpha));
       
+      // Calculate position with vibration
+      var drawX = x0 + sc.x;
+      var drawY = y0 + sc.y;
+      
+      if (vibrationIntensity > 0) {
+        drawX += (Math.random() - 0.5) * vibrationIntensity * 3;
+        drawY += (Math.random() - 0.5) * vibrationIntensity * 3;
+      }
+      
       // Draw cached sprite with rotation
       var cos = Math.cos(c.rot) * drawScale;
       var sin = Math.sin(c.rot) * drawScale;
-      ctx.setTransform(cos, sin, -sin, cos, x0 + sc.x, y0 + sc.y);
-      ctx.drawImage(getCharSprite(c.char), -halfSprite, -halfSprite);
+      ctx.setTransform(cos, sin, -sin, cos, drawX, drawY);
+      ctx.drawImage(getCharSprite(c.char, similarityColor), -halfSprite, -halfSprite);
     }
     
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -448,9 +536,32 @@ var Asteroid = function () {
    * @param {Sprite} other - Colliding sprite
    */
   this.collision = function (other) {
+    // If this asteroid is being imploded, ignore collision
+    if (this.implosionState) return;
+    
     SFX.explosion();
     
-    // Apply Similarity multiplier if active
+    // Check if Similarity Mode should trigger chain destruction
+    if (window.SimilarityMode && SimilarityMode.isActive() && this.similarityGroup && !SimilarityMode.isChainTriggered()) {
+      // Trigger chain destruction - this asteroid and all same-colored ones will implode
+      SimilarityMode.triggerChainDestruction(this, this.similarityGroup);
+      
+      // Award score for the triggering asteroid (full points)
+      if (other.name == "bullet" || other.name == "turretbullet") {
+        var asteroidScore = Math.floor(GAME_CONFIG.asteroid.scorePerChar * this.charCount);
+        Game.score += asteroidScore;
+        if (Game.stats) {
+          Game.stats.asteroidsDestroyed++;
+          Game.stats.asteroidsScore += asteroidScore;
+        }
+      }
+      
+      // Don't split or die normally - the implosion system handles this
+      Game.explosionAt(other.x, other.y);
+      return;
+    }
+    
+    // Apply Similarity multiplier if active (for non-chain kills)
     var scoreMultiplier = (window.SimilarityMode && SimilarityMode.isActive()) 
       ? SimilarityMode.getMultiplier() 
       : 1;
@@ -487,11 +598,6 @@ var Asteroid = function () {
           spawnSimilarityPickup(this.x, this.y);
         }
       }
-    }
-    
-    // Notify Similarity mode if active
-    if (window.SimilarityMode && SimilarityMode.isActive()) {
-      SimilarityMode.onAsteroidDestroyed(this);
     }
 
     Game.explosionAt(other.x, other.y);

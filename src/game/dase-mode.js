@@ -7,7 +7,7 @@
 var DASEMode = (function() {
   // DASE Meter state
   var fragments = 0;
-  var meterMax = 10; // Fragments needed to fill meter (reduced from 18)
+  var meterMax = 6; // Fragments needed to fill meter (dynamic per wave)
   
   // DASE Mode state
   var active = false;
@@ -28,6 +28,16 @@ var DASEMode = (function() {
   
   // Turret reference
   var turret = null;
+  
+  /**
+   * Calculate fragments needed based on current wave
+   */
+  function calculateMeterMax() {
+    var wave = Game.currentWave || 1;
+    if (wave === 1) return 6;
+    if (wave === 2) return 8;
+    return 10; // Wave 3+
+  }
   
   /**
    * Turret class - orbiting auto-firing weapon
@@ -279,8 +289,9 @@ var DASEMode = (function() {
       
       fragments += count;
       
-      // Check for auto-activation
-      if (!active && fragments >= meterMax) {
+      // Check for auto-activation (use dynamic meterMax)
+      var currentMeterMax = calculateMeterMax();
+      if (!active && fragments >= currentMeterMax) {
         this.activate();
       }
     },
@@ -296,7 +307,7 @@ var DASEMode = (function() {
      * Get meter max
      */
     getMeterMax: function() {
-      return meterMax;
+      return calculateMeterMax();
     },
     
     /**
@@ -329,8 +340,8 @@ var DASEMode = (function() {
       turret = new Turret();
       this.turret = turret;
       
-      // Schedule Silo (Latency Drone) spawn - always spawns during DASE
-      siloSpawnTimer = 180 + Math.random() * 120; // 3-5 seconds after DASE starts
+      // Schedule Silo (Latency Drone) spawn - appears later in DASE to give player time
+      siloSpawnTimer = 420 + Math.random() * 180; // 7-10 seconds after DASE starts
       
       SFX.daseActivate();
     },

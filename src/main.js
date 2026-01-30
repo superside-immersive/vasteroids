@@ -258,6 +258,11 @@ $(function () {
       DASEMode.draw(context);
     }
     
+    // Draw Similarity implosion particles
+    if (window.SimilarityMode && (SimilarityMode.isActive() || SimilarityMode.hasParticles())) {
+      SimilarityMode.drawImplosionParticles(context);
+    }
+    
     // Draw hyperspace particles
     if (Game.hyperspaceParticles && Game.hyperspaceParticles.length > 0) {
       drawHyperspaceParticles(context);

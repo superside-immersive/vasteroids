@@ -151,6 +151,7 @@
         <kbd>F</kbd> FPS
       </p>
       <button id="test-next-level" style="margin-top:6px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Test NEXT LEVEL</button>
+      <button id="test-similarity" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#FF00FF; border:1px solid #FF00FF; border-radius:6px; cursor:pointer;">Similarity Test</button>
       <a href="/qr-demo.html" target="_blank" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; text-decoration:none; font-size:12px;">◫ QR DEMO CODES</a>
     </div>
 
@@ -180,6 +181,31 @@
                   }
                 }
               }
+            }
+          });
+        }
+        
+        // Similarity Test button
+        var simBtn = document.getElementById('test-similarity');
+        if (simBtn) {
+          simBtn.addEventListener('click', function() {
+            if (window.SimilarityMode && window.Game && Game.FSM && Game.FSM.state === 'run') {
+              if (!SimilarityMode.isActive()) {
+                SimilarityMode.activate();
+                if (window.SFX && SFX.similarityActivate) {
+                  SFX.similarityActivate();
+                }
+                simBtn.textContent = 'Similarity ACTIVE';
+                simBtn.style.background = '#FF00FF';
+                simBtn.style.color = '#000';
+                setTimeout(function() {
+                  simBtn.textContent = 'Similarity Test';
+                  simBtn.style.background = '#0f162f';
+                  simBtn.style.color = '#FF00FF';
+                }, 2000);
+              }
+            } else {
+              alert('Start the game first! (Press SPACE to start, then click this button)');
             }
           });
         }

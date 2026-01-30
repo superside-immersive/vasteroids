@@ -214,6 +214,45 @@ var HUD = (function() {
     // Combo system removed - Similarity Pickup now drops rarely from asteroids
     // or guaranteed from killing Silo
   }
+  
+  /**
+   * Show floating text at a position (for chain combo bonus etc)
+   */
+  function showFloatingText(text, x, y) {
+    if (!container) return;
+    
+    var floater = document.createElement('div');
+    floater.className = 'floating-text';
+    floater.textContent = text;
+    floater.style.position = 'absolute';
+    floater.style.left = x + 'px';
+    floater.style.top = y + 'px';
+    floater.style.transform = 'translate(-50%, -50%)';
+    floater.style.color = '#00FF00';
+    floater.style.fontSize = '24px';
+    floater.style.fontWeight = 'bold';
+    floater.style.fontFamily = 'monospace';
+    floater.style.textShadow = '0 0 10px #00FF00, 0 0 20px #00FF00';
+    floater.style.pointerEvents = 'none';
+    floater.style.zIndex = '1000';
+    floater.style.opacity = '1';
+    floater.style.transition = 'transform 1.5s ease-out, opacity 1.5s ease-out';
+    
+    container.appendChild(floater);
+    
+    // Trigger animation
+    requestAnimationFrame(function() {
+      floater.style.transform = 'translate(-50%, -150%)';
+      floater.style.opacity = '0';
+    });
+    
+    // Remove after animation
+    setTimeout(function() {
+      if (floater.parentNode) {
+        floater.parentNode.removeChild(floater);
+      }
+    }, 1600);
+  }
 
   return {
     init: init,
@@ -224,6 +263,7 @@ var HUD = (function() {
     updateWave: updateWave,
     updateHyperspace: updateHyperspace,
     updateDASEMeter: updateDASEMeter,
-    updateCombo: updateCombo
+    updateCombo: updateCombo,
+    showFloatingText: showFloatingText
   };
 })();
