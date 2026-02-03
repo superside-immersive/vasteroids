@@ -20,6 +20,25 @@ body {
   filter: drop-shadow(0 0 18px rgba(31, 217, 254, 0.2));
 }
 
+/* Safari perf mode: avoid expensive filters/animations in WebKit.
+   Enabled via documentElement.classList.add('safari-perf') in main.js. */
+html.safari-perf #game-container {
+  filter: none !important;
+}
+
+html.safari-perf .scoreboard-panel::before,
+html.safari-perf .scoreboard-panel::after {
+  animation: none !important;
+}
+
+html.safari-perf .scoreboard-panel::after {
+  opacity: 0.03;
+}
+
+html.safari-perf .scoreboard-panel .text-glow {
+  animation: none !important;
+}
+
 .ui-overlay {
   position: absolute;
   inset: 0;
@@ -51,6 +70,119 @@ body {
 
 .scoreboard-panel {
   min-width: 340px;
+  max-width: 340px;
+  width: 340px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Retro TV Effect Overlay for Scoreboard */
+.scoreboard-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  /* Scanlines */
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  animation: scanlineFlicker 0.1s infinite;
+}
+
+.scoreboard-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 101;
+  /* Noise/grain effect */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  animation: noiseAnimation 0.15s infinite steps(5);
+}
+
+/* Tracking bar that moves across the panel */
+.retro-tracking-bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 99;
+  animation: trackingBarMove 4s linear infinite;
+}
+
+@keyframes scanlineFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.97; }
+}
+
+@keyframes noiseAnimation {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2%, -2%); }
+  40% { transform: translate(2%, 1%); }
+  60% { transform: translate(-1%, 2%); }
+  80% { transform: translate(1%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes trackingBarMove {
+  0% { top: -30px; }
+  100% { top: calc(100% + 30px); }
+}
+
+/* RGB chromatic aberration effect on text */
+.scoreboard-panel .text-glow {
+  position: relative;
+  animation: rgbShift 3s ease-in-out infinite;
+}
+
+@keyframes rgbShift {
+  0%, 100% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      -1px 0 rgba(255, 0, 0, 0.3),
+      1px 0 rgba(0, 255, 255, 0.3);
+  }
+  25% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      -1px 0 rgba(255, 0, 0, 0.4),
+      1px 0 rgba(0, 255, 255, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      0px 0 rgba(255, 0, 0, 0.2),
+      0px 0 rgba(0, 255, 255, 0.2);
+  }
+  75% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      1px 0 rgba(255, 0, 0, 0.2),
+      -1px 0 rgba(0, 255, 255, 0.4);
+  }
+}
+
+/* CRT screen curve/vignette effect */
+.scoreboard-panel {
+  box-shadow: 
+    var(--ui-glow),
+    inset 0 0 60px rgba(0, 0, 0, 0.4),
+    inset 0 0 100px rgba(0, 0, 0, 0.2);
 }
 
 .scoreboard-table {
@@ -318,6 +450,9 @@ body {
   justify-content: center;
   align-items: center;
   backdrop-filter: blur(4px);
+}
+html.safari-perf .qr-scanner-overlay {
+  backdrop-filter: none !important;
 }
 
 .qr-scanner-container {

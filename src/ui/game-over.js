@@ -17,6 +17,7 @@ var GameOverUI = (function() {
   var scoreValue = 0;
   var awaitingRestart = false;
   var awaitingConfirm = false;
+  var autoReturnTimer = null;
   var scanner = null;
   var isScanning = false;
   var keyHandler = null;
@@ -148,11 +149,11 @@ var GameOverUI = (function() {
     confirmPanel = document.createElement('div');
     confirmPanel.className = 'qr-confirm-panel hidden';
     confirmPanel.innerHTML = '<div class="confirm-name" id="confirm-name"></div>' +
-                             '<div class="confirm-buttons">' +
-                             '<button class="confirm-btn confirm-ok selected" id="btn-ok">OK</button>' +
-                             '<button class="confirm-btn confirm-cancel" id="btn-cancel">RESCAN</button>' +
-                             '</div>' +
-                             '<div class="confirm-hint">← → SELECT &nbsp; SPACE CONFIRM</div>';
+                 '<div class="confirm-buttons">' +
+                 '<button type="button" class="confirm-btn confirm-ok selected" id="btn-ok">OK</button>' +
+                 '<button type="button" class="confirm-btn confirm-cancel" id="btn-cancel">RESCAN</button>' +
+                 '</div>' +
+                 '<div class="confirm-hint">← → SELECT &nbsp; SPACE CONFIRM</div>';
     qrSection.appendChild(confirmPanel);
 
     // Divider
@@ -205,9 +206,26 @@ var GameOverUI = (function() {
     overlay.appendChild(panel);
     (container || document.body).appendChild(overlay);
 
-    submitBtn.addEventListener('click', finalizeName);
+    // Guard against any accidental navigation (e.g. implicit form submission)
+    overlay.addEventListener('submit', function(e) {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      return false;
+    }, true);
+
+    submitBtn.addEventListener('click', function(e) {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      finalizeName();
+      return false;
+    });
     input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') finalizeName();
+      if (e.key === 'Enter') {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        finalizeName();
+        return false;
+      }
     });
 
     // Get button references after DOM is ready
@@ -216,10 +234,20 @@ var GameOverUI = (function() {
       btnCancel = document.getElementById('btn-cancel');
       
       if (btnOk) {
-        btnOk.addEventListener('click', confirmOk);
+        btnOk.addEventListener('click', function(e) {
+          if (e && typeof e.preventDefault === 'function') e.preventDefault();
+          if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+          confirmOk();
+          return false;
+        });
       }
       if (btnCancel) {
-        btnCancel.addEventListener('click', confirmCancel);
+        btnCancel.addEventListener('click', function(e) {
+          if (e && typeof e.preventDefault === 'function') e.preventDefault();
+          if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+          confirmCancel();
+          return false;
+        });
       }
     }, 0);
   }
@@ -556,6 +584,10 @@ var GameOverUI = (function() {
     scoreValue = score || 0;
     awaitingRestart = false;
     awaitingConfirm = false;
+    if (autoReturnTimer) {
+      clearTimeout(autoReturnTimer);
+      autoReturnTimer = null;
+    }
     overlay.classList.remove('hidden');
     panel.style.opacity = '1';
     hint.style.display = 'none';
@@ -600,16 +632,170 @@ var GameOverUI = (function() {
     stopScanning();
     var name = (input.value || '').trim().toUpperCase();
     if (!name) name = 'ACE';
-    Scoreboard.addEntry(name.substring(0, 8), scoreValue);
-    // Show scoreboard with animation (true = animate from player position to top)
-    Scoreboard.show(true);
-    hint.style.display = 'inline-block';
-    awaitingRestart = true;
-    try { input.blur(); } catch (e) {}
-    Animations.fadeOut(panel, { duration: 320 });
-    setTimeout(function() {
-      overlay.classList.add('hidden');
-    }, 340);
+
+    function computePostGameTotalDelayMs(rank) {
+      // Scoreboard.show(true) does:
+      // - render around player immediately
+      // - wait 2000ms
+      // - scroll to top over duration = 3000 + (viewStart * 60)
+      // Then we want to show the top 10 for ~5s before returning to idle.
+      var revealMs = 0;
+      if (typeof rank === 'number' && rank > 10) {
+        var playerPos = rank - 1;
+        var viewStart = playerPos - 5;
+        if (viewStart < 0) viewStart = 0;
+        if (viewStart > 90) viewStart = 90;
+        var scrollMs = 3000 + (viewStart * 60);
+        revealMs = 2000 + scrollMs;
+      }
+      // showScoreboardPostGameOver triggers Scoreboard.show(true) after ~380ms.
+      return 380 + revealMs + 5000 + 250;
+    }
+
+    function scheduleAutoReturnToIdle(rank) {
+      if (autoReturnTimer) {
+        clearTimeout(autoReturnTimer);
+        autoReturnTimer = null;
+      }
+      var totalDelay = computePostGameTotalDelayMs(rank);
+      autoReturnTimer = setTimeout(function() {
+        try {
+          // Ensure we don't instantly start a new game due to a held SPACE.
+          if (window.KEY_STATUS) {
+            KEY_STATUS.space = false;
+          }
+          window.gameStart = false;
+
+          if (window.Scoreboard) {
+            if (typeof Scoreboard.hide === 'function') {
+              Scoreboard.hide(true);
+            }
+            if (typeof Scoreboard.setSuppressed === 'function') {
+              Scoreboard.setSuppressed(false);
+            }
+          }
+
+          // Return to idle flow (boot -> waiting) without requiring a key press.
+          if (window.Game && Game.FSM) {
+            Game.FSM.timer = null;
+            Game.skipWaiting = false;
+            if (window.IntroManager && typeof IntroManager.reset === 'function') {
+              IntroManager.reset();
+            }
+            Game.FSM._startRequested = false;
+            Game.FSM._restartArmed = false;
+            Game.FSM.state = 'boot';
+          } else if (window.GameFSM) {
+            GameFSM.timer = null;
+            if (window.IntroManager && typeof IntroManager.reset === 'function') {
+              IntroManager.reset();
+            }
+            GameFSM._startRequested = false;
+            GameFSM._restartArmed = false;
+            GameFSM.state = 'boot';
+          }
+        } catch (e) {
+          console.warn('[GameOver] Auto-return to idle failed:', e);
+        }
+      }, totalDelay);
+    }
+
+    // If the page reloads right after submit (e.g. Live Server reload on scores.json write),
+    // persist enough info to resume the post-game scoreboard reveal on next load.
+    try {
+      sessionStorage.setItem('vasteroids.pendingReveal', JSON.stringify({
+        name: name.substring(0, 8),
+        score: scoreValue,
+        at: Date.now()
+      }));
+    } catch (e) {}
+    
+    // Show loading state
+    submitBtn.textContent = 'SAVING...';
+    submitBtn.style.pointerEvents = 'none';
+    
+    function showScoreboardPostGameOver() {
+      // Ensure nothing is suppressing the scoreboard.
+      if (window.Scoreboard && typeof Scoreboard.setSuppressed === 'function') {
+        Scoreboard.setSuppressed(false);
+      }
+      if (window.Scoreboard && typeof Scoreboard.stopAutoShow === 'function') {
+        Scoreboard.stopAutoShow();
+      }
+      if (window.Scoreboard && typeof Scoreboard.allowAnimatedShowOnce === 'function') {
+        Scoreboard.allowAnimatedShowOnce();
+      }
+
+      // Prevent a held SPACE from immediately restarting and skipping the scoreboard.
+      if (window.KEY_STATUS) {
+        KEY_STATUS.space = false;
+      }
+      window.gameStart = false;
+
+      // Hide the game-over panel first so the scoreboard is visible for the full reveal.
+      setTimeout(function() {
+        try {
+          if (window.Scoreboard && typeof Scoreboard.ensureInit === 'function') {
+            Scoreboard.ensureInit(document.getElementById('game-container'));
+          }
+          Scoreboard.show(true);
+        } catch (e) {
+          console.warn('[GameOver] Failed to show scoreboard:', e);
+        }
+
+        // If something else hid it immediately, retry once.
+        setTimeout(function() {
+          try {
+            if (window.Scoreboard && typeof Scoreboard.isVisible === 'function' && !Scoreboard.isVisible()) {
+              if (window.Scoreboard && typeof Scoreboard.allowAnimatedShowOnce === 'function') {
+                Scoreboard.allowAnimatedShowOnce();
+              }
+              Scoreboard.show(true);
+            }
+          } catch (e) {}
+        }, 180);
+      }, 380);
+    }
+
+    // Submit score (async, handles server + fallback). Wrap to catch sync failures too.
+    Promise.resolve().then(function() {
+      return Scoreboard.addEntry(name.substring(0, 8), scoreValue);
+    }).then(function(result) {
+      console.log('[GameOver] Score submitted:', result);
+
+      try { sessionStorage.removeItem('vasteroids.pendingReveal'); } catch (e) {}
+
+      showScoreboardPostGameOver();
+      hint.textContent = 'RETURNING TO IDLE...';
+      hint.style.display = 'inline-block';
+      awaitingRestart = true;
+      scheduleAutoReturnToIdle(result && typeof result.rank === 'number' ? result.rank : null);
+      try { input.blur(); } catch (e) {}
+      Animations.fadeOut(panel, { duration: 320 });
+      setTimeout(function() {
+        overlay.classList.add('hidden');
+        submitBtn.textContent = 'SAVE SCORE';
+        submitBtn.style.pointerEvents = '';
+      }, 340);
+    }).catch(function(err) {
+      console.error('[GameOver] Error submitting score:', err);
+
+      try { sessionStorage.removeItem('vasteroids.pendingReveal'); } catch (e) {}
+
+      // Still show scoreboard even if server failed
+      showScoreboardPostGameOver();
+      hint.textContent = 'RETURNING TO IDLE...';
+      hint.style.display = 'inline-block';
+      awaitingRestart = true;
+      // Best-effort: approximate rank from current scoreboard snapshot.
+      scheduleAutoReturnToIdle(window.Scoreboard ? Scoreboard.getPositionForScore(scoreValue) : null);
+      Animations.fadeOut(panel, { duration: 320 });
+      setTimeout(function() {
+        overlay.classList.add('hidden');
+        submitBtn.textContent = 'SAVE SCORE';
+        submitBtn.style.pointerEvents = '';
+      }, 340);
+    });
   }
 
   function readyForRestart() {
@@ -620,6 +806,10 @@ var GameOverUI = (function() {
     stopScanning();
     removeKeyHandler();
     awaitingConfirm = false;
+    if (autoReturnTimer) {
+      clearTimeout(autoReturnTimer);
+      autoReturnTimer = null;
+    }
     overlay.classList.add('hidden');
     Scoreboard.hide();
     awaitingRestart = false;

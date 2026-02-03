@@ -1,0 +1,17 @@
+{
+  "name": "vasteroids-scoreboard-server",
+  "version": "1.0.0",
+  "description": "Global scoreboard server for Vasteroids",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0",
+    "pg": "^8.16.3",
+    "ws": "^8.16.0"
+  }
+}

@@ -7,6 +7,7 @@ var GameFSM = {
   timer: null,
   state: 'boot',
   _startRequested: false,
+  _restartArmed: false,
 
   /**
    * Initial boot state
@@ -15,6 +16,11 @@ var GameFSM = {
     Game.spawnAsteroids(5);
     if (window.IntroManager && typeof IntroManager.reset === 'function') {
       IntroManager.reset();
+    }
+    // Restart scoreboard auto-show for idle mode
+    if (window.Scoreboard && typeof Scoreboard.startAutoShow === 'function') {
+      Scoreboard.setSuppressed(false);
+      Scoreboard.startAutoShow();
     }
     Game.skipWaiting = false;
     this._startRequested = false;
@@ -38,12 +44,26 @@ var GameFSM = {
       IdleAnimationManager.start();
     }
 
+    if (!this._startRequested && window.Scoreboard) {
+      if (typeof Scoreboard.setSuppressed === 'function') {
+        Scoreboard.setSuppressed(false);
+      }
+      if (typeof Scoreboard.isAutoShowActive === 'function' && !Scoreboard.isAutoShowActive()) {
+        Scoreboard.startAutoShow();
+      }
+    }
+
     // User pressed START/Space: play intro zoom-in (do not instantly hide logo).
     if (!this._startRequested && (KEY_STATUS.space || window.gameStart)) {
       KEY_STATUS.space = false;
       window.gameStart = false;
       this._startRequested = true;
       Game.skipWaiting = false;
+      if (window.Scoreboard) {
+        Scoreboard.setSuppressed(true);
+        Scoreboard.hide(true);
+        Scoreboard.stopAutoShow();
+      }
       if (window.IdleAnimationManager) { IdleAnimationManager.stop(); }
       if (window.IntroManager && typeof IntroManager.requestPlay === 'function') {
         IntroManager.reset();
@@ -73,7 +93,8 @@ var GameFSM = {
    */
   start: function () {
     if (window.Scoreboard) { 
-      Scoreboard.hide();
+      Scoreboard.hide(true); // Force hide immediately
+      Scoreboard.stopAutoShow(); // Stop auto-show during gameplay
     }
     if (window.GameOverUI) { GameOverUI.hide(); }
     if (window.IdleAnimationManager) { IdleAnimationManager.stop(); }
@@ -97,7 +118,6 @@ var GameFSM = {
       }
     }
 
-    // Initialize game state using new method
     Game.initNewGame();
     Game.totalAsteroids = 2;
     Game.spawnAsteroids();
@@ -261,10 +281,20 @@ var GameFSM = {
     if (window.GameOverUI) {
       if (this.timer == null) {
         this.timer = Date.now();
+        // Require a fresh START/SPACE press to restart (prevents held SPACE from skipping the post-game scoreboard).
+        this._restartArmed = false;
+        if (window.Scoreboard) {
+          Scoreboard.setSuppressed(false);
+        }
         GameOverUI.start(Game.score);
       }
 
-      if (GameOverUI.readyForRestart() && (KEY_STATUS.space || window.gameStart)) {
+      // Arm restart only after keys are released once.
+      if (GameOverUI.readyForRestart() && !this._restartArmed && !KEY_STATUS.space && !window.gameStart) {
+        this._restartArmed = true;
+      }
+
+      if (GameOverUI.readyForRestart() && this._restartArmed && (KEY_STATUS.space || window.gameStart)) {
         KEY_STATUS.space = false;
         window.gameStart = false;
         this.timer = null;

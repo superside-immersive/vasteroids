@@ -4,6 +4,36 @@
  */
 
 $(function () {
+  (function initNavDebug() {
+    var enabled = false;
+    try {
+      enabled = localStorage.getItem('debugNav') === '1';
+    } catch (e) {
+      enabled = false;
+    }
+    if (!enabled) return;
+
+    var loadN = 1;
+    try {
+      loadN = Number(sessionStorage.getItem('debugNavLoad') || '0') + 1;
+      sessionStorage.setItem('debugNavLoad', String(loadN));
+    } catch (e) {}
+
+    console.log('[NavDebug] Load #' + loadN + ' at ' + new Date().toISOString());
+    window.addEventListener('pageshow', function (e) {
+      console.log('[NavDebug] pageshow, persisted:', !!(e && e.persisted));
+    });
+    window.addEventListener('pagehide', function (e) {
+      console.log('[NavDebug] pagehide, persisted:', !!(e && e.persisted));
+    });
+    window.addEventListener('beforeunload', function () {
+      console.log('[NavDebug] beforeunload');
+    });
+    window.addEventListener('unload', function () {
+      console.log('[NavDebug] unload');
+    });
+  })();
+
   // Canvas setup
   var canvas = $("#canvas");
   Game.canvasWidth = canvas.width();
@@ -12,6 +42,30 @@ $(function () {
   var context = canvas[0].getContext("2d");
   var canvasNode = canvas[0];
   var gameContainer = document.getElementById('game-container');
+
+  // Safari-only perf mode: avoid effects that are known to be expensive in WebKit.
+  // Chrome behavior/visuals remain unchanged.
+  function isProbablySafari() {
+    var ua = navigator.userAgent || '';
+    var vendor = navigator.vendor || '';
+    if (vendor !== 'Apple Computer, Inc.') return false;
+    if (ua.indexOf('Safari/') === -1) return false;
+    // Exclude other browsers (even if WebKit-based on iOS) to avoid changing "Chrome" behavior.
+    if (/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/.test(ua)) return false;
+    return true;
+  }
+
+  var safariPerfEnabled = isProbablySafari();
+  try {
+    // Override knob (no UI): localStorage.safariPerf = '1' (force on) or '0' (force off)
+    var override = localStorage.getItem('safariPerf');
+    if (override === '1') safariPerfEnabled = true;
+    if (override === '0') safariPerfEnabled = false;
+  } catch (e) {}
+
+  if (safariPerfEnabled) {
+    document.documentElement.classList.add('safari-perf');
+  }
 
   // Retro TV post-process toggle (scanlines/noise/RGB drift/tracking)
   var retroEnabled = false;
@@ -25,6 +79,9 @@ $(function () {
     if (window.RetroFX && typeof RetroFX.init === 'function') {
       RetroFX.init(Game.canvasWidth, Game.canvasHeight);
       RetroFX.setEnabled(retroEnabled);
+      if (typeof RetroFX.setPerfMode === 'function') {
+        RetroFX.setPerfMode(safariPerfEnabled);
+      }
     }
 
     var btn = document.getElementById('toggle-retro-tv');
@@ -40,6 +97,9 @@ $(function () {
         retroEnabled = !retroEnabled;
         if (window.RetroFX && typeof RetroFX.setEnabled === 'function') {
           RetroFX.setEnabled(retroEnabled);
+          if (typeof RetroFX.setPerfMode === 'function') {
+            RetroFX.setPerfMode(safariPerfEnabled);
+          }
         }
         try {
           localStorage.setItem('retroTvEnabled', retroEnabled ? '1' : '0');
@@ -54,7 +114,55 @@ $(function () {
   glowCanvas.width = Game.canvasWidth;
   glowCanvas.height = Game.canvasHeight;
   var glowCtx = glowCanvas.getContext('2d');
-  var bloomEnabled = true;
+  // Safari perf mode disables bloom (canvas blur filter is a common WebKit perf cliff)
+  var bloomEnabled = !safariPerfEnabled;
+
+  // FPS display (bottom debug area)
+  var fpsEnabled = false;
+  var fpsBtn = null;
+  var fpsReadout = null;
+
+  (function initFpsUi() {
+    try {
+      fpsEnabled = localStorage.getItem('fpsEnabled') === '1';
+    } catch (e) {
+      fpsEnabled = false;
+    }
+
+    fpsBtn = document.getElementById('toggle-fps');
+    fpsReadout = document.getElementById('fps-readout');
+
+    function renderFpsUi() {
+      if (fpsBtn) {
+        fpsBtn.textContent = fpsEnabled ? 'FPS: ON' : 'FPS: OFF';
+        fpsBtn.setAttribute('aria-pressed', fpsEnabled ? 'true' : 'false');
+      }
+      if (fpsReadout) {
+        fpsReadout.style.display = fpsEnabled ? 'inline-block' : 'none';
+      }
+    }
+
+    function setFpsEnabled(next) {
+      fpsEnabled = !!next;
+      try {
+        localStorage.setItem('fpsEnabled', fpsEnabled ? '1' : '0');
+      } catch (e) {}
+      renderFpsUi();
+    }
+
+    // Expose for hotkeys
+    window.toggleFpsDisplay = function () {
+      setFpsEnabled(!fpsEnabled);
+    };
+
+    if (fpsBtn) {
+      fpsBtn.addEventListener('click', function () {
+        setFpsEnabled(!fpsEnabled);
+      });
+    }
+
+    renderFpsUi();
+  })();
 
   // Text renderer setup
   Text.context = context;
@@ -62,7 +170,9 @@ $(function () {
 
   // UI overlays
   if (window.HUD) { HUD.init(gameContainer); }
-  if (window.Scoreboard) { Scoreboard.init(gameContainer); }
+  if (window.Scoreboard) { 
+    Scoreboard.init(gameContainer); 
+  }
   if (window.GameOverUI) { GameOverUI.init(gameContainer); }
 
   // Initialize FSM
@@ -306,6 +416,12 @@ $(function () {
       elapsedCounter -= 1000;
       avgFramerate = frameCount;
       frameCount = 0;
+
+      // Publish + render FPS (update only once per second)
+      window.__vasteroidsAvgFps = avgFramerate;
+      if (fpsEnabled && fpsReadout) {
+        fpsReadout.textContent = 'FPS: ' + avgFramerate;
+      }
     }
 
     // Continue loop or show pause

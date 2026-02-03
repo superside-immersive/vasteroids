@@ -324,20 +324,16 @@ var LevelTransitionManager = (function() {
 var IdleAnimationManager = (function() {
   var active = false;
   var stars = [];
-  var textState = { x: 0, alpha: 1 }; // Now uses X for horizontal movement
+  var textState = { x: 0, alpha: 1 };
   var textTimeline = null;
   var textStarted = false;
   var cycleCount = 0;
-  var scoreboardShowing = false;
-  var scoreboardTimeout = null;
-  var lastScoreboardShowAt = 0;
-  var scoreboardCadenceMs = 10000;
 
   function createStars(count) {
     stars = [];
     for (var i = 0; i < count; i++) {
       stars.push({
-        x: Game.canvasWidth + Math.random() * 100, // Start from right
+        x: Game.canvasWidth + Math.random() * 100,
         y: Math.random() * Game.canvasHeight,
         speed: 2 + Math.random() * 4,
         len: 6 + Math.random() * 12,
@@ -347,7 +343,7 @@ var IdleAnimationManager = (function() {
   }
 
   function resetTextState() {
-    textState.x = Game.canvasWidth + 200; // Start from right
+    textState.x = Game.canvasWidth + 200;
     textState.alpha = 1;
     textStarted = false;
     cycleCount = 0;
@@ -357,39 +353,18 @@ var IdleAnimationManager = (function() {
     textTimeline = null;
   }
 
-  function hideScoreboard() {
-    if (window.Scoreboard) {
-      Scoreboard.hide();
-    }
-    scoreboardShowing = false;
-  }
-
-  function showScoreboard() {
-    if (window.Scoreboard && active) {
-      Scoreboard.show(true);
-      scoreboardShowing = true;
-      if (scoreboardTimeout) clearTimeout(scoreboardTimeout);
-      scoreboardTimeout = setTimeout(function() {
-        hideScoreboard();
-      }, 7000);
-    }
-  }
-
   function start() {
     if (active) return;
     active = true;
     createStars(60);
     resetTextState();
-    scoreboardShowing = false;
-    // Show once immediately (next render), then every 10 seconds.
-    lastScoreboardShowAt = 0;
   }
 
   function startTextCycle() {
     if (textTimeline || !active) return;
 
-    var startX = Game.canvasWidth + 200; // Start from right
-    var endX = -400; // Exit to left
+    var startX = Game.canvasWidth + 200;
+    var endX = -400;
 
     textStarted = true;
     textState.x = startX;
@@ -411,38 +386,22 @@ var IdleAnimationManager = (function() {
       textStarted = false;
       textState.x = startX;
       
-      // Every 2 cycles, show scoreboard
-      if (cycleCount % 2 === 0 && !scoreboardShowing) {
-        showScoreboard();
-        // Wait for scoreboard to finish, then restart text cycle
-        setTimeout(function() {
-          if (active && !scoreboardShowing) {
-            startTextCycle();
-          }
-        }, 8000);
-      } else {
-        // Small delay before next cycle
-        setTimeout(function() {
-          if (active && !scoreboardShowing) {
-            startTextCycle();
-          }
-        }, 1200);
-      }
+      // Small delay before next cycle
+      setTimeout(function() {
+        if (active) {
+          startTextCycle();
+        }
+      }, 1200);
     });
   }
 
   function stop() {
     active = false;
     resetTextState();
-    hideScoreboard();
-    if (scoreboardTimeout) {
-      clearTimeout(scoreboardTimeout);
-      scoreboardTimeout = null;
-    }
   }
 
   function maybeStartTextCycle() {
-    if (textTimeline || !active || scoreboardShowing) return;
+    if (textTimeline || !active) return;
     startTextCycle();
   }
 
@@ -451,15 +410,8 @@ var IdleAnimationManager = (function() {
 
     // Ensure scoreboard is initialized (some embeds may skip init ordering)
     if (window.Scoreboard && typeof Scoreboard.ensureInit === 'function') {
-      Scoreboard.ensureInit(document.getElementById('game-container'));
-    }
-
-    // Show scoreboard periodically while idling in waiting state
-    if (!scoreboardShowing && window.Scoreboard && window.Game && Game.FSM && Game.FSM.state === 'waiting') {
-      var now = Date.now();
-      if (lastScoreboardShowAt === 0 || (now - lastScoreboardShowAt >= scoreboardCadenceMs)) {
-        lastScoreboardShowAt = now;
-        showScoreboard();
+      if (typeof Scoreboard.isReady !== 'function' || !Scoreboard.isReady()) {
+        Scoreboard.ensureInit(document.getElementById('game-container'));
       }
     }
 
@@ -473,15 +425,15 @@ var IdleAnimationManager = (function() {
 
     for (var i = 0; i < stars.length; i++) {
       var s = stars[i];
-      s.x -= s.speed; // Move LEFT
+      s.x -= s.speed;
       var y = s.y + Math.sin(Date.now() * 0.0005 + i) * 0.8;
       var x1 = s.x;
-      var x2 = s.x + s.len; // Horizontal trail
+      var x2 = s.x + s.len;
 
       ctx.strokeStyle = 'rgba(124, 240, 255,' + s.alpha + ')';
       ctx.beginPath();
       ctx.moveTo(x1, y);
-      ctx.lineTo(x2, y); // Horizontal line
+      ctx.lineTo(x2, y);
       ctx.stroke();
 
       // Recycle from right when exiting left
@@ -490,8 +442,6 @@ var IdleAnimationManager = (function() {
         s.y = Math.random() * Game.canvasHeight;
       }
     }
-
-    // No text rendered here (keep cycle timing for scoreboard)
 
     ctx.restore();
   }
