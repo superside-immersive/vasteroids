@@ -51,6 +51,15 @@ var Game = {
     this.hyperspaceJumps = 3;
     this.upgradeLevel = 0;
     this.upgradeHits = 0;
+
+    // Ensure ship resets to the default starting position for a new game
+    if (this.ship) {
+      this.ship.x = this.canvasWidth / 2;
+      this.ship.y = this.canvasHeight / 2;
+      this.ship.vel.x = 0;
+      this.ship.vel.y = 0;
+      this.ship.rot = 0;
+    }
     
     // Reset stats for new game
     this.stats = {
