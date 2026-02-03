@@ -200,6 +200,11 @@ var GameFSM = {
         LevelTransitionManager.start(Game.ship);
       }
 
+      // Clear DASE turret/beam on wave transition so next wave can spawn a fresh turret.
+      if (window.DASEMode && typeof DASEMode.deactivate === 'function') {
+        DASEMode.deactivate();
+      }
+
       // Hide UFO + any alien bullets during the level transition
       if (Game.bigAlien) {
         Game.bigAlien.visible = false;
