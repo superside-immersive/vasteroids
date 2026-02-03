@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VASTEROIDS - Scoreboard Moderator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0E142C;
+      --panel: rgba(18, 26, 54, 0.85);
+      --border: #1fd9fe;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ff2f6b;
+      --accent: #7cf0ff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Orbitron', 'Courier New', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 0 18px rgba(31, 217, 254, 0.2);
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 22px;
+      letter-spacing: 2px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="password"], input[type="text"] {
+      background: #111a36;
+      border: 1px solid #1fd9fe;
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 6px;
+      min-width: 240px;
+    }
+
+    button {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    button.danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    th { color: var(--muted); font-weight: 600; }
+
+    .muted { color: var(--muted); }
+    .status { margin-top: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="panel">
+      <h1>Scoreboard Moderator</h1>
+      <div class="row">
+        <input id="serverUrl" type="text" placeholder="Server URL" />
+        <input id="token" type="password" placeholder="Admin token" />
+        <button id="save">Save</button>
+        <button id="refresh">Refresh</button>
+        <button id="reset" class="danger">Reset to Default</button>
+      </div>
+      <div class="status" id="status">Idle</div>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Score</th><th>ID</th><th>Action</th></tr>
+        </thead>
+        <tbody id="scoresBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var SERVER_KEY = 'vasteroids.admin.serverUrl';
+      var TOKEN_KEY = 'vasteroids.admin.token';
+      var statusEl = document.getElementById('status');
+      var scoresBody = document.getElementById('scoresBody');
+      var serverInput = document.getElementById('serverUrl');
+      var tokenInput = document.getElementById('token');
+
+      function normalizeUrl(value) {
+        return String(value || '').trim().replace(/\/+$/, '');
+      }
+
+      function setStatus(text, isError) {
+        statusEl.textContent = text;
+        statusEl.style.color = isError ? '#ff2f6b' : '#9ca3af';
+      }
+
+      function getServerUrl() {
+        var raw = serverInput.value || '';
+        return normalizeUrl(raw) || normalizeUrl(window.location.origin);
+      }
+
+      function getToken() {
+        return String(tokenInput.value || '').trim();
+      }
+
+      function saveSettings() {
+        localStorage.setItem(SERVER_KEY, serverInput.value || '');
+        localStorage.setItem(TOKEN_KEY, tokenInput.value || '');
+        setStatus('Saved', false);
+      }
+
+      function loadSettings() {
+        var savedServer = localStorage.getItem(SERVER_KEY) || '';
+        var savedToken = localStorage.getItem(TOKEN_KEY) || '';
+        serverInput.value = savedServer || normalizeUrl(window.location.origin);
+        tokenInput.value = savedToken;
+      }
+
+      function request(path, options) {
+        options = options || {};
+        options.headers = options.headers || {};
+        var token = getToken();
+        if (token) options.headers['x-admin-token'] = token;
+        return fetch(getServerUrl() + path, options)
+          .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          });
+      }
+
+      function renderScores(scores) {
+        var html = '';
+        for (var i = 0; i < scores.length; i++) {
+          var s = scores[i];
+          html += '<tr>' +
+            '<td>' + (i + 1) + '</td>' +
+            '<td>' + (s.name || '') + '</td>' +
+            '<td>' + (s.score || 0) + '</td>' +
+            '<td class="muted">' + (s.id || '') + '</td>' +
+            '<td><button data-id="' + s.id + '" class="danger">Delete</button></td>' +
+            '</tr>';
+        }
+        scoresBody.innerHTML = html;
+      }
+
+      function refresh() {
+        setStatus('Loading...', false);
+        request('/admin/scores')
+          .then(function(data) {
+            renderScores(data.scores || []);
+            setStatus('Loaded ' + (data.scores || []).length + ' scores', false);
+          })
+          .catch(function(err) {
+            setStatus('Failed to load: ' + err.message, true);
+          });
+      }
+
+      function resetScores() {
+        if (!confirm('Reset scoreboard to default placeholders?')) return;
+        setStatus('Resetting...', false);
+        request('/admin/scores/reset', { method: 'POST' })
+          .then(function(data) {
+            renderScores(data.scores || []);
+            setStatus('Reset complete', false);
+          })
+          .catch(function(err) {
+            setStatus('Reset failed: ' + err.message, true);
+          });
+      }
+
+      scoresBody.addEventListener('click', function(e) {
+        var btn = e.target.closest('button');
+        if (!btn) return;
+        var id = btn.getAttribute('data-id');
+        if (!id) return;
+        if (!confirm('Delete this score?')) return;
+        setStatus('Deleting...', false);
+        request('/admin/scores/' + encodeURIComponent(id), { method: 'DELETE' })
+          .then(function(data) {
+            renderScores(data.scores || []);
+            setStatus('Deleted', false);
+          })
+          .catch(function(err) {
+            setStatus('Delete failed: ' + err.message, true);
+          });
+      });
+
+      document.getElementById('save').addEventListener('click', saveSettings);
+      document.getElementById('refresh').addEventListener('click', refresh);
+      document.getElementById('reset').addEventListener('click', resetScores);
+
+      loadSettings();
+      refresh();
+    })();
+  </script>
+</body>
+</html>

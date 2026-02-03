@@ -31,3 +31,5 @@ services:
         value: "*"
       - key: SCORE_POST_MAX_PER_MIN
         value: "60"
+      - key: ADMIN_TOKEN
+        sync: false

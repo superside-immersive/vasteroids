@@ -23,6 +23,7 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const MAX_SCORES = 100;
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 
 const DEFAULT_DATABASE_URL = 'postgresql://vasteroids:vasteroids@localhost:5432/vasteroids';
 const DATABASE_URL = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
@@ -115,6 +116,23 @@ function generatePlaceholderEntries(count) {
   return entries;
 }
 
+function requireAdmin(req, res, next) {
+  // If no token configured, restrict admin routes to localhost only
+  if (!ADMIN_TOKEN) {
+    var host = (req.ip || '').toString();
+    if (host === '127.0.0.1' || host === '::1' || host.endsWith('127.0.0.1')) {
+      return next();
+    }
+    return res.status(401).json({ error: 'Admin token required' });
+  }
+
+  var token = req.get('x-admin-token') || req.query.token || '';
+  if (token !== ADMIN_TOKEN) {
+    return res.status(401).json({ error: 'Invalid admin token' });
+  }
+  return next();
+}
+
 async function applySchema() {
   const schemaPath = path.join(__dirname, 'schema.sql');
   const sql = fs.readFileSync(schemaPath, 'utf8');
@@ -159,6 +177,30 @@ async function seedPlaceholdersIfNeeded() {
   );
 
   console.log(`[DB] Seeded ${needed} placeholder scores`);
+}
+
+async function resetScoresToDefault() {
+  await pool.query('BEGIN');
+  try {
+    await pool.query('DELETE FROM scores');
+    const placeholders = generatePlaceholderEntries(MAX_SCORES);
+    const values = [];
+    const params = [];
+    let p = 1;
+    for (const e of placeholders) {
+      values.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++})`);
+      params.push(e.id, e.client_submission_id, e.name, e.score, e.placeholder, e.created_at);
+    }
+    await pool.query(
+      `INSERT INTO scores (id, client_submission_id, name, score, placeholder, created_at)
+       VALUES ${values.join(',')}`,
+      params
+    );
+    await pool.query('COMMIT');
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    throw err;
+  }
 }
 
 async function insertScore({ name, score, clientSubmissionId }) {
@@ -223,6 +265,41 @@ app.get('/healthz', async (req, res) => {
     res.status(200).json({ ok: true });
   } catch (err) {
     res.status(503).json({ ok: false });
+  }
+});
+
+// Admin moderation endpoints
+app.get('/admin/scores', requireAdmin, async (req, res) => {
+  try {
+    const scores = await getTopScores(MAX_SCORES);
+    res.json({ scores });
+  } catch (err) {
+    console.error('Error fetching admin scores:', err);
+    res.status(500).json({ error: 'Failed to fetch scores' });
+  }
+});
+
+app.delete('/admin/scores/:id', requireAdmin, async (req, res) => {
+  const id = String(req.params.id || '').trim();
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  try {
+    await pool.query('DELETE FROM scores WHERE id = $1', [id]);
+    const scores = await getTopScores(MAX_SCORES);
+    res.json({ success: true, scores });
+  } catch (err) {
+    console.error('Error deleting score:', err);
+    res.status(500).json({ error: 'Failed to delete score' });
+  }
+});
+
+app.post('/admin/scores/reset', requireAdmin, async (req, res) => {
+  try {
+    await resetScoresToDefault();
+    const scores = await getTopScores(MAX_SCORES);
+    res.json({ success: true, scores });
+  } catch (err) {
+    console.error('Error resetting scores:', err);
+    res.status(500).json({ error: 'Failed to reset scores' });
   }
 });
 
