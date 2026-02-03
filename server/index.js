@@ -216,6 +216,16 @@ const postLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Health check for Render
+app.get('/healthz', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.status(200).json({ ok: true });
+  } catch (err) {
+    res.status(503).json({ ok: false });
+  }
+});
+
 // GET /api/scores - Fetch top 100
 app.get('/api/scores', async (req, res) => {
   try {
@@ -274,6 +284,28 @@ app.get('/api/scores/rank/:score', async (req, res) => {
     res.status(500).json({ error: 'Failed to compute rank' });
   }
 });
+
+// Optional: serve the game frontend from the same Render web service.
+// This makes the frontend work out-of-the-box on Render without needing a separate static site.
+// It also keeps API calls same-origin when you open https://<service>.onrender.com/index.html
+const REPO_ROOT = path.join(__dirname, '..');
+
+app.get('/', (req, res) => {
+  res.redirect('/index.html');
+});
+
+app.use((req, res, next) => {
+  // Avoid exposing server source/config via static hosting.
+  const p = req.path || '';
+  if (p === '/server' || p.indexOf('/server/') === 0) return res.status(404).end();
+  return next();
+});
+
+app.use(express.static(REPO_ROOT, {
+  index: false,
+  dotfiles: 'ignore',
+  maxAge: IS_PROD ? '1h' : 0
+}));
 
 // Create HTTP server
 const server = http.createServer(app);

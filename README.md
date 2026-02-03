@@ -100,6 +100,41 @@ If your scoreboard server is not at `http://localhost:3000`, you can point the c
 - Query string: `?server=https://your-scoreboard-host`
 - Or set `window.VASTEROIDS_SERVER_URL` before the game scripts load
 
+### Deploy the scoreboard server to Render (Automatic / Blueprint)
+
+This repo includes a Render Blueprint file at `render.yaml` that provisions:
+
+- A Postgres database (`vasteroids-db`)
+- The Node.js scoreboard web service (`vasteroids-scoreboard`)
+
+Steps:
+
+1) In the Render Dashboard, click **New → Blueprint**
+2) Select this GitHub repo (Render will auto-detect `render.yaml`)
+3) Review the resources and click **Apply**
+
+After the deploy completes:
+
+- Your API will be at `https://<service>.onrender.com/api/scores`
+- WebSocket will be `wss://<service>.onrender.com`
+
+If you host the game on a different domain, set `CORS_ORIGIN` in the Render service env vars.
+For quick testing you can keep it at `*`.
+
+### Host the frontend on Render and GitHub Pages
+
+The frontend can run from either host:
+
+- **Render**: the scoreboard service also serves the static game files.
+  Open `https://vasteroids-scoreboard.onrender.com/index.html` (or your service's actual onrender URL).
+- **GitHub Pages**: enable Pages for this repo and open the published site.
+  By default, the client will try to use `https://vasteroids-scoreboard.onrender.com` as the scoreboard API.
+
+You can override the scoreboard server URL any time via:
+
+- Query string: `?server=https://your-scoreboard-host`
+- Or set `window.VASTEROIDS_SERVER_URL` before loading the game scripts
+
 ---
 
 ## Controls

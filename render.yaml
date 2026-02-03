@@ -1,0 +1,34 @@
+version: "1"
+
+databases:
+  - name: vasteroids-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+    databaseName: vasteroids
+    user: vasteroids
+    # Only allow internal Render network access
+    ipAllowList: []
+
+services:
+  - type: web
+    name: vasteroids-scoreboard
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vasteroids-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: SCORE_POST_MAX_PER_MIN
+        value: "60"

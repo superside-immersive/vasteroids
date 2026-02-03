@@ -24,19 +24,75 @@ var Scoreboard = (function() {
   var currentViewStart = 0;
   var VISIBLE_ROWS = 10;
 
+  // Persist chosen server URL so GH Pages users don't need to keep ?server=...
+  var SERVER_URL_STORAGE_KEY = 'vasteroids.serverUrl.v1';
+
   // Server configuration
-  function resolveServerUrl() {
+  function normalizeBaseUrl(value) {
+    return String(value || '').trim().replace(/\/+$/, '');
+  }
+
+  function isLocalhostHost(hostname) {
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+  }
+
+  function isLocalBaseUrl(url) {
     try {
-      if (window.VASTEROIDS_SERVER_URL) {
-        return String(window.VASTEROIDS_SERVER_URL).replace(/\/+$/, '');
-      }
-    } catch (e) {}
+      var u = new URL(url);
+      return isLocalhostHost(u.hostname);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function loadRememberedServerUrl() {
+    try {
+      var raw = localStorage.getItem(SERVER_URL_STORAGE_KEY);
+      if (!raw) return null;
+      var normalized = normalizeBaseUrl(raw);
+      if (!normalized) return null;
+      // Don't reuse a localhost URL when we're on a non-localhost page.
+      try {
+        var pageHost = (window.location && window.location.hostname) ? window.location.hostname : '';
+        if (!isLocalhostHost(pageHost) && isLocalBaseUrl(normalized)) return null;
+      } catch (e) {}
+      return normalized;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function rememberServerUrl(url) {
+    try { localStorage.setItem(SERVER_URL_STORAGE_KEY, normalizeBaseUrl(url)); } catch (e) {}
+  }
+
+  function resolveServerUrl() {
     try {
       var qs = new URLSearchParams(window.location.search || '');
       var fromQs = qs.get('server');
-      if (fromQs) return String(fromQs).replace(/\/+$/, '');
+      if (fromQs) return normalizeBaseUrl(fromQs);
     } catch (e) {}
-    return 'http://localhost:3000';
+
+    try {
+      if (window.VASTEROIDS_SERVER_URL) {
+        return normalizeBaseUrl(window.VASTEROIDS_SERVER_URL);
+      }
+    } catch (e) {}
+
+    var remembered = loadRememberedServerUrl();
+    if (remembered) return remembered;
+
+    // Sensible defaults by environment:
+    // - Local dev: localhost
+    // - Render: if this page is served from the same service, same-origin works.
+    // - GitHub Pages / other static hosting: default to the canonical Render service name.
+    try {
+      var hostname = (window.location && window.location.hostname) ? window.location.hostname : '';
+      if (isLocalhostHost(hostname)) return 'http://localhost:3000';
+      if (hostname && hostname.indexOf('onrender.com') !== -1) return normalizeBaseUrl(window.location.origin);
+    } catch (e) {}
+
+    return 'https://vasteroids-scoreboard.onrender.com';
   }
 
   function resolveWsUrl(serverUrl) {
@@ -262,6 +318,7 @@ var Scoreboard = (function() {
         scores = data.scores || [];
         serverAvailable = true;
         hasServerSnapshot = true;
+        rememberServerUrl(SERVER_URL);
         persistLastServerScores(scores);
         clearSessionPlaceholders();
         flushPendingSubmissions();
