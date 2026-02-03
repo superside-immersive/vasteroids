@@ -463,18 +463,35 @@
     // SCOREBOARD DATA & WEBSOCKET
     // =============================================
     (function() {
+      function normalizeBaseUrl(value) {
+        return String(value || '').trim().replace(/\/+$/, '');
+      }
+
+      function isLocalhostHost(hostname) {
+        return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+      }
+
       function resolveServerUrl() {
-        try {
-          if (window.VASTEROIDS_SERVER_URL) {
-            return String(window.VASTEROIDS_SERVER_URL).replace(/\/+$/, '');
-          }
-        } catch (e) {}
         try {
           var qs = new URLSearchParams(window.location.search || '');
           var fromQs = qs.get('server');
-          if (fromQs) return String(fromQs).replace(/\/+$/, '');
+          if (fromQs) return normalizeBaseUrl(fromQs);
         } catch (e) {}
-        return 'http://localhost:3000';
+
+        try {
+          if (window.VASTEROIDS_SERVER_URL) {
+            return normalizeBaseUrl(window.VASTEROIDS_SERVER_URL);
+          }
+        } catch (e) {}
+
+        // Sensible defaults by environment
+        try {
+          var hostname = (window.location && window.location.hostname) ? window.location.hostname : '';
+          if (isLocalhostHost(hostname)) return 'http://localhost:3000';
+          if (hostname && hostname.indexOf('onrender.com') !== -1) return normalizeBaseUrl(window.location.origin);
+        } catch (e) {}
+
+        return 'https://vasteroids-scoreboard.onrender.com';
       }
 
       function resolveWsUrl(serverUrl) {
@@ -483,7 +500,7 @@
           u.protocol = (u.protocol === 'https:') ? 'wss:' : 'ws:';
           return u.toString().replace(/\/+$/, '');
         } catch (e) {
-          return 'ws://localhost:3000';
+          return 'wss://vasteroids-scoreboard.onrender.com';
         }
       }
 
