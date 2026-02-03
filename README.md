@@ -57,6 +57,49 @@ Open:
 - http://localhost:8000/index.html
 - http://localhost:8000/index-modular.html
 
+### Global Scoreboard (Local)
+
+This repo includes an optional **global scoreboard service** (REST + WebSocket) backed by **Postgres**.
+The game works without it (shows session placeholders + cached snapshot), but when the server is running
+it will sync the Top 100 and submit scores reliably.
+
+#### 1) Start Postgres (Docker)
+
+From the repo root:
+
+```bash
+docker-compose up -d
+```
+
+This starts Postgres on `localhost:5432` using the config in `docker-compose.yml`.
+
+#### 2) Start the scoreboard server
+
+```bash
+cd server
+npm install
+npm start
+```
+
+The server listens on:
+
+- REST: `http://localhost:3000/api/scores`
+- WS: `ws://localhost:3000`
+
+Environment variables (optional):
+
+- `DATABASE_URL` (see `server/.env.example`)
+- `CORS_ORIGIN` (default: `*`)
+
+#### 3) Run the game with Live Server
+
+Use VS Code Live Server (recommended for local iteration) and open `index.html` or `index-modular.html`.
+
+If your scoreboard server is not at `http://localhost:3000`, you can point the client at a different URL via:
+
+- Query string: `?server=https://your-scoreboard-host`
+- Or set `window.VASTEROIDS_SERVER_URL` before the game scripts load
+
 ---
 
 ## Controls
