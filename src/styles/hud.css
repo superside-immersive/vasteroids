@@ -1,0 +1,356 @@
+/**
+ * ==========================================================================
+ * HUD (Heads-Up Display)
+ * ==========================================================================
+ * 
+ * In-game interface elements displayed during gameplay including score,
+ * lives, wave counter, badges, and special meters.
+ * 
+ * @description Gameplay HUD components
+ * @author VAsteroids Team
+ * @version 1.0.0
+ * @requires tokens.css, animations.css
+ * 
+ * COMPONENTS:
+ *   - .hud-bar              : Top bar container
+ *   - .hud-chip             : Base chip/badge component
+ *   - .hud-score            : Score display chip
+ *   - .hud-lives            : Lives indicator
+ *   - .hud-badge            : Achievement badge display
+ *   - .hud-hyperspace       : Hyperspace counter
+ *   - .hud-wave             : Wave number display
+ *   - .instruction-billboard: Tutorial instruction overlay
+ * 
+ *   DASE METER:
+ *     - .dase-meter-container : Data fragment collection meter
+ *     - .dase-meter-bar       : Progress bar
+ *     - .dase-meter-fill      : Progress fill
+ * 
+ *   COMBO INDICATOR:
+ *     - .combo-indicator      : Similarity pickup combo tracker
+ *     - .combo-pips           : Visual pip indicators
+ * 
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   HUD BAR
+   ========================================================================== */
+
+.hud-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   HUD CHIPS
+   ========================================================================== 
+   
+   Base component for HUD information displays
+*/
+
+.hud-chip {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ui-border);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--ui-glow);
+  color: var(--ui-text);
+  letter-spacing: 1px;
+}
+
+/* Score Display */
+.hud-score {
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: #48d6ff;
+  border-color: rgba(31, 217, 254, 0.9);
+  background: rgba(12, 20, 44, 0.65);
+  min-width: 230px;
+  text-align: left;
+  text-shadow: 0 0 8px rgba(31, 217, 254, 0.45);
+}
+
+/* Lives Display */
+.hud-lives {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Hyperspace Counter */
+.hud-hyperspace {
+  color: #06D69F;
+  border-color: #06D69F;
+  transition: opacity 0.3s ease;
+}
+
+/* Wave Number */
+.hud-wave {
+  color: #FFBC42;
+  border-color: #FFBC42;
+}
+
+/* ==========================================================================
+   ACHIEVEMENT BADGE
+   ========================================================================== */
+
+.hud-badge {
+  margin-left: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 213, 106, 0.7);
+  color: #FFD56A;
+  background: rgba(255, 213, 106, 0.08);
+  box-shadow: 0 0 12px rgba(255, 213, 106, 0.5);
+  font-size: 16px;
+}
+
+.hud-badge-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 6px rgba(255, 213, 106, 0.7));
+}
+
+/* ==========================================================================
+   INSTRUCTION BILLBOARD
+   ========================================================================== */
+
+.instruction-billboard {
+  position: absolute;
+  width: 220px;
+  height: auto;
+  pointer-events: none;
+  z-index: 35;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 16px rgba(31, 217, 254, 0.45));
+  transition: opacity 0.3s ease-out;
+}
+
+/* ==========================================================================
+   DASE METER
+   ========================================================================== 
+   
+   Data fragment collection progress indicator.
+   Shows collection progress, ready state, and active powerup state.
+*/
+
+.dase-meter-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  text-align: center;
+  padding: 12px 16px;
+  background: rgba(12, 20, 44, 0.9);
+  border: 2px solid rgba(31, 217, 254, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(31, 217, 254, 0.25);
+  transition: all 0.3s ease;
+}
+
+.dase-meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dase-meter-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #FFBC42;
+  text-shadow: 0 0 8px rgba(255, 188, 66, 0.5);
+  transition: color 0.3s ease;
+}
+
+.dase-meter-counter {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.95);
+  transition: color 0.3s ease;
+}
+
+/* Fragment Icons (Hidden by default, can be enabled) */
+.dase-fragment-icons {
+  display: none;
+}
+
+.dase-fragment-icon {
+  font-size: 16px;
+  color: rgba(232, 107, 56, 0.25);
+  text-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.dase-fragment-icon.filled {
+  color: #E86B38;
+  text-shadow: 0 0 10px rgba(232, 107, 56, 0.8);
+}
+
+.dase-fragment-icon.just-filled {
+  animation: fragmentPop 0.4s ease-out;
+}
+
+/* Activation Text (Hidden by default) */
+.dase-activation-text {
+  display: none;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  color: #06D69F;
+  margin-top: 8px;
+  text-shadow: 0 0 15px rgba(6, 214, 159, 0.8);
+}
+
+/* Progress Bar */
+.dase-meter-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 188, 66, 0.65);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dase-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #FFBC42, #FFD56A);
+  border-radius: 4px;
+  transition: width 0.15s ease-out, background 0.3s ease;
+}
+
+/* --------------------------------------------------------------------------
+   DASE METER STATES
+   -------------------------------------------------------------------------- */
+
+/* Ready State - Meter is full, waiting for activation */
+.dase-meter-container.ready {
+  border-color: #06D69F;
+  box-shadow: 0 0 30px rgba(6, 214, 159, 0.4);
+  animation: readyPulse 0.8s ease-in-out infinite;
+}
+
+.dase-meter-container.ready .dase-activation-text {
+  display: block;
+  animation: textGlow 0.5s ease-in-out infinite alternate;
+}
+
+.dase-meter-container.ready .dase-meter-counter {
+  color: #06D69F;
+  text-shadow: 0 0 10px rgba(6, 214, 159, 0.8);
+}
+
+.dase-meter-container.ready .dase-fragment-icon.filled {
+  color: #06D69F;
+  text-shadow: 0 0 12px rgba(6, 214, 159, 0.8);
+  animation: iconGlow 0.6s ease-in-out infinite alternate;
+}
+
+/* Active State - Powerup is currently in use */
+.dase-meter-container.active {
+  border-color: rgba(31, 217, 254, 0.8);
+  box-shadow: 0 0 25px rgba(31, 217, 254, 0.4);
+}
+
+.dase-meter-container.active .dase-meter-label {
+  color: #1FD9FE;
+  text-shadow: 0 0 12px rgba(31, 217, 254, 0.8);
+}
+
+.dase-meter-container.active .dase-fragment-icons {
+  display: none;
+}
+
+.dase-meter-container.active .dase-activation-text {
+  display: none;
+}
+
+.dase-meter-container.active .dase-meter-bar {
+  border-color: rgba(31, 217, 254, 0.6);
+  box-shadow: 0 0 10px rgba(31, 217, 254, 0.3);
+}
+
+.dase-meter-container.active .dase-meter-fill {
+  background: linear-gradient(90deg, #1FD9FE, #06D69F);
+  box-shadow: 0 0 10px rgba(31, 217, 254, 0.6);
+}
+
+/* ==========================================================================
+   COMBO INDICATOR
+   ========================================================================== 
+   
+   Similarity pickup combo tracker.
+   Shows current combo progress with visual pip indicators.
+*/
+
+.combo-indicator {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(255, 0, 255, 0.15);
+  border: 1px solid rgba(255, 0, 255, 0.5);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.combo-indicator.hidden {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.8);
+  pointer-events: none;
+}
+
+/* Close State - Timer running low, urgency shake */
+.combo-indicator.close {
+  animation: comboShake 0.15s ease infinite;
+  border-color: #FF00FF;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+}
+
+.combo-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #FF00FF;
+  margin-bottom: 6px;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+}
+
+/* Combo Pips */
+.combo-pips {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.combo-pip {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 0, 255, 0.4);
+  border-radius: 2px;
+  background: transparent;
+  transition: all 0.15s ease;
+}
+
+.combo-pip.active {
+  background: #FF00FF;
+  border-color: #FF00FF;
+  box-shadow: 0 0 10px #FF00FF;
+  animation: pipPop 0.2s ease-out;
+}

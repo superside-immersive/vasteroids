@@ -4,8 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VASTEROIDS - Scoreboard Moderator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'Audiowide';
+      src: url('assets/Audiowide-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Orbitron';
+      src: url('assets/Orbitron-VariableFont_wght.ttf') format('truetype-variations');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --bg: #0E142C;
       --panel: rgba(18, 26, 54, 0.85);
@@ -19,7 +34,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Orbitron', 'Courier New', monospace;
+      font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -126,7 +141,16 @@
       var tokenInput = document.getElementById('token');
 
       function normalizeUrl(value) {
-        return String(value || '').trim().replace(/\/+$/, '');
+        var raw = String(value || '').trim();
+        if (!raw) return '';
+        if (!/^https?:\/\//i.test(raw)) {
+          return raw.replace(/\/+$/, '');
+        }
+        try {
+          return new URL(raw).origin;
+        } catch (e) {
+          return raw.replace(/\/+$/, '');
+        }
       }
 
       function setStatus(text, isError) {

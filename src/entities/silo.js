@@ -5,13 +5,17 @@
  * Drops 3 Data Fragments guaranteed when destroyed
  */
 
+// Preload silo sprite
+var SILO_IMG = new Image();
+SILO_IMG.src = 'assets/images/silo-main.svg';
+
 var Silo = function() {
-  // Diamond shape
+  // Diamond shape (collision area)
   this.init("silo", [
-    0, -20,    // top
-    15, 0,     // right
-    0, 20,     // bottom
-    -15, 0     // left
+    0, -24,    // top
+    18, 0,     // right
+    0, 24,     // bottom
+    -18, 0     // left
   ]);
   
   this.visible = false;
@@ -38,6 +42,12 @@ var Silo = function() {
    */
   this.preMove = function(delta) {
     if (!this.visible) return;
+
+    // If DASE is inactive or turret is missing, remove Silo
+    if (!window.DASEMode || !DASEMode.isActive() || !DASEMode.turret) {
+      this.die();
+      return;
+    }
     
     // Flash timer countdown
     if (this.hitFlashTimer > 0) {
@@ -99,6 +109,21 @@ var Silo = function() {
         this.vel.x = (dirX * 0.5 + perpX * 0.8) * this.speed;
         this.vel.y = (dirY * 0.5 + perpY * 0.8) * this.speed;
       }
+
+      // Edge avoidance when fleeing (prevent corner camping)
+      if (fleeing) {
+        var edgeMargin = 80;
+        var edgePushX = 0;
+        var edgePushY = 0;
+
+        if (this.x < edgeMargin) edgePushX += (edgeMargin - this.x) / edgeMargin;
+        if (this.x > Game.canvasWidth - edgeMargin) edgePushX -= (this.x - (Game.canvasWidth - edgeMargin)) / edgeMargin;
+        if (this.y < edgeMargin) edgePushY += (edgeMargin - this.y) / edgeMargin;
+        if (this.y > Game.canvasHeight - edgeMargin) edgePushY -= (this.y - (Game.canvasHeight - edgeMargin)) / edgeMargin;
+
+        this.vel.x += edgePushX * this.speed * 1.2;
+        this.vel.y += edgePushY * this.speed * 1.2;
+      }
       
       // Rotate to face movement direction
       this.rot = Math.atan2(this.vel.y, this.vel.x) * 180 / Math.PI + 90;
@@ -158,7 +183,7 @@ var Silo = function() {
   };
   
   /**
-   * Draw the red diamond ship
+   * Draw the red diamond ship using sprite
    */
   this.draw = function() {
     if (!this.visible) return;
@@ -168,11 +193,10 @@ var Silo = function() {
     // Hit flash effect
     var flashAlpha = this.hitFlashTimer > 0 ? 0.5 + Math.sin(this.hitFlashTimer * 2) * 0.5 : 1;
     
-    // Outer glow
     ctx.save();
-    ctx.shadowColor = '#FF0055';
-    ctx.shadowBlur = 15;
-    
+    ctx.globalAlpha = flashAlpha;
+
+    // Maintain collision path for isPointInPath checks
     ctx.beginPath();
     ctx.moveTo(this.points[0], this.points[1]);
     for (var i = 2; i < this.points.length; i += 2) {
@@ -180,14 +204,33 @@ var Silo = function() {
     }
     ctx.closePath();
     
-    ctx.strokeStyle = this.hitFlashTimer > 0 ? '#FFFFFF' : '#FF0055';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = flashAlpha;
-    ctx.stroke();
-    
-    // Inner fill
-    ctx.fillStyle = 'rgba(255, 0, 85, 0.3)';
-    ctx.fill();
+    // Draw the sprite centered
+    var size = 48;
+    if (SILO_IMG.complete && SILO_IMG.naturalWidth > 0) {
+      // Apply flash effect by drawing white overlay
+      if (this.hitFlashTimer > 0) {
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      ctx.drawImage(SILO_IMG, -size/2, -size/2, size, size);
+    } else {
+      // Fallback: red diamond
+      ctx.shadowColor = '#FF0055';
+      ctx.shadowBlur = 15;
+      
+      ctx.beginPath();
+      ctx.moveTo(this.points[0], this.points[1]);
+      for (var i = 2; i < this.points.length; i += 2) {
+        ctx.lineTo(this.points[i], this.points[i + 1]);
+      }
+      ctx.closePath();
+      
+      ctx.strokeStyle = this.hitFlashTimer > 0 ? '#FFFFFF' : '#FF0055';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(255, 0, 85, 0.3)';
+      ctx.fill();
+    }
     
     ctx.restore();
   };

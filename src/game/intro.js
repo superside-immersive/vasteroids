@@ -1,9 +1,22 @@
 /**
  * Intro Animation
- * Logo animation at game start
+ * Logo animation at game start with VAST branding
  */
 
 var IntroManager = {
+  // Main VAST logo (logo + "VAST" text) - viewBox: 0 0 242.201 60
+  // Aspect ratio: 4.04 (wider than tall)
+  vastLogo: null,
+  vastLogoLoaded: false,
+  vastLogoSize: { w: 242.201, h: 60 },  // Fixed from SVG viewBox - DO NOT CHANGE
+  
+  // Vasteroids title logo - PNG: 2263 x 452
+  // Aspect ratio: 5.01 (very wide, short)
+  titleLogo: null,
+  titleLogoLoaded: false,
+  titleLogoSize: { w: 2263, h: 452 },  // Fixed from PNG dimensions - DO NOT CHANGE
+  
+  // Legacy logo for fallback
   logo: null,
   logoLoaded: false,
   logoSize: { w: 1438, h: 356 },
@@ -27,6 +40,8 @@ var IntroManager = {
     props: {
       logoScale: 0.6,
       logoAlpha: 1,
+      titleAlpha: 1,
+      vastTextAlpha: 1,  // For fading "VAST" text separately
       shipAlpha: 0,
       shipScale: 0.6
     }
@@ -44,6 +59,8 @@ var IntroManager = {
     this.state.playRequested = false;
     this.state.props.logoScale = 0.6;
     this.state.props.logoAlpha = 1;
+    this.state.props.titleAlpha = 1;
+    this.state.props.vastTextAlpha = 1;
     this.state.props.shipAlpha = 0;
     this.state.props.shipScale = 0.6;
 
@@ -67,12 +84,30 @@ var IntroManager = {
   },
 
   /**
-   * Initialize intro logo
+   * Initialize intro logos
    */
   init: function() {
     var self = this;
+    
+    // Load VAST logo (ship + "VAST" text)
+    this.vastLogo = new Image();
+    this.vastLogo.src = 'assets/images/vast-logo-new.svg';
+    this.vastLogo.onload = function() {
+      self.vastLogoLoaded = true;
+      // Note: Using fixed dimensions from SVG viewBox, not naturalWidth/Height
+      // SVG naturalWidth/Height can be unreliable across browsers
+    };
+    
+    // Load vasteroids title logo
+    this.titleLogo = new Image();
+    this.titleLogo.src = 'assets/images/Vasteroids_Logo_ByLetter.png';
+    this.titleLogo.onload = function() {
+      self.titleLogoLoaded = true;
+      // Note: Using fixed dimensions from PNG, not naturalWidth/Height
+    };
+    
+    // Legacy logo fallback
     this.logo = new Image();
-    // Official asset location
     this.logo.src = 'assets/images/logo.svg';
 
     this.logo.onload = function() {
@@ -113,7 +148,7 @@ var IntroManager = {
       return;
     }
 
-    if (this.state.done || !this.logoLoaded) return;
+    if (this.state.done) return;
 
     // Time step for drifting background blobs
     var now = Date.now();
@@ -126,9 +161,7 @@ var IntroManager = {
     // If user hasn't requested start yet, keep logo visible (no autoplay).
     if (!this.state.playRequested) {
       this._ensureStaticProps();
-      if (this.state.props.logoAlpha > 0.01) {
-        this._drawLogo(context, this.state.props.logoScale, this.state.props.logoAlpha);
-      }
+      this._drawIdleScreen(context);
       return;
     }
 
@@ -151,21 +184,46 @@ var IntroManager = {
       return;
     }
 
-    // Draw logo only if it has some opacity
-    if (this.state.props.logoAlpha > 0.01) {
-      this._drawLogo(context, this.state.props.logoScale, this.state.props.logoAlpha);
+    // Draw vasteroids title at top (fading out)
+    if (this.state.props.titleAlpha > 0.01) {
+      this._drawTitleLogo(context, this.state.props.titleAlpha);
     }
 
-    // Draw ship overlay
+    // Draw VAST logo (ship icon part stays, text fades)
+    if (this.state.props.logoAlpha > 0.01) {
+      this._drawVastLogo(context, this.state.props.logoScale, this.state.props.logoAlpha, this.state.props.vastTextAlpha);
+    }
+
+    // Draw ship overlay when it appears
     if (elapsed > this.state.shipAppear) {
       this._drawShipOverlay(context, ship, elapsed, this.state.props.shipScale, this.state.props.shipAlpha);
     }
   },
 
+  /**
+   * Draw idle screen (before START is pressed)
+   */
+  _drawIdleScreen: function(context) {
+    // Draw vasteroids title at top
+    if (this.titleLogoLoaded) {
+      this._drawTitleLogo(context, 1.0);
+    }
+    
+    // Draw VAST logo (ship + "VAST" text) below center
+    if (this.vastLogoLoaded) {
+      this._drawVastLogo(context, 1.0, 1.0, 1.0);
+    } else if (this.logoLoaded) {
+      // Fallback to legacy logo
+      this._drawLogo(context, this.state.props.logoScale, this.state.props.logoAlpha);
+    }
+  },
+
   _ensureStaticProps: function() {
-    // Keep it simple: show logo at default scale until START is pressed.
-    this.state.props.logoScale = 0.6;
+    // Keep it simple: show logos at default scale until START is pressed.
+    this.state.props.logoScale = 1.0;
     this.state.props.logoAlpha = 1;
+    this.state.props.titleAlpha = 1;
+    this.state.props.vastTextAlpha = 1;
     this.state.props.shipAlpha = 0;
     this.state.props.shipScale = 0.6;
   },
@@ -175,48 +233,43 @@ var IntroManager = {
 
     // Compute targetScale once per play cycle
     if (this.state.targetScale === null) {
-      var fitBase = Math.min(
-        (Game.canvasWidth * 0.58) / this.logoSize.w,
-        (Game.canvasHeight * 0.43) / this.logoSize.h
-      );
-      var shipBaseHeight = 36.4;
-      var shipBaseWidth = 35.0;
-      var desiredShipScale = ship.scale;
-      var scaleFromHeight = desiredShipScale * shipBaseHeight / (185 * fitBase);
-      var scaleFromWidth = desiredShipScale * shipBaseWidth / (179 * fitBase);
-      this.state.targetScale = Math.min(scaleFromHeight, scaleFromWidth);
+      // Scale ship to appear roughly same size as the VAST logo ship icon
+      this.state.targetScale = 1.0;
     }
 
-    var startScale = this.state.targetScale * 0.6;
+    var startScale = 1.0;
     this.state.props.logoScale = startScale;
     this.state.props.shipScale = startScale;
     this.state.props.logoAlpha = 1;
+    this.state.props.titleAlpha = 1;
+    this.state.props.vastTextAlpha = 1;
     this.state.props.shipAlpha = 0;
 
     var self = this;
     this.state.timeline = anime.timeline({ autoplay: true });
 
+    // Animation sequence:
+    // 1. Fade out title logo (vasteroids) and "VAST" text
+    // 2. Ship logo icon remains visible, then fades to reveal ship sprite
     this.state.timeline
       .add({
         targets: this.state.props,
-        logoScale: this.state.targetScale,
-        duration: 1400,
-        easing: 'easeOutExpo'
+        titleAlpha: 0,
+        vastTextAlpha: 0,
+        duration: 1200,
+        easing: 'easeOutQuad'
       })
       .add({
         targets: this.state.props,
         shipAlpha: 1,
-        shipScale: this.state.targetScale,
-        duration: 900,
+        duration: 800,
         easing: 'easeOutQuad'
-      }, '-=700')
+      }, '-=400')
       .add({
         targets: this.state.props,
         logoAlpha: 0,
-        // Keep ship visible for a smoother handoff to gameplay.
-        shipAlpha: 1,
-        duration: 1100,
-        delay: 300,
+        duration: 900,
+        delay: 200,
         easing: 'easeInQuad'
       });
 
@@ -226,9 +279,59 @@ var IntroManager = {
   },
 
   /**
-   * Draw logo image
+   * Draw vasteroids title logo at top of screen
+   * PNG: 2263 x 452 (wide, short) - aspect ratio ~5.01
+   */
+  _drawTitleLogo: function(context, alpha) {
+    if (!this.titleLogoLoaded) return;
+    
+    // Maintain correct aspect ratio (2263 / 452 = 5.01)
+    var aspectRatio = this.titleLogoSize.w / this.titleLogoSize.h;  // 5.01
+    var maxWidth = Game.canvasWidth * 0.75;  // Logo más grande
+    var w = maxWidth;
+    var h = w / aspectRatio;
+    
+    var x = (Game.canvasWidth - w) / 2;
+    var y = Game.canvasHeight * 0.36;  // Centrado verticalmente
+    
+    context.save();
+    context.globalAlpha = alpha;
+    context.drawImage(this.titleLogo, x, y, w, h);
+    context.restore();
+  },
+
+  /**
+   * Draw VAST logo (ship icon + "VAST" text) below center
+   * SVG viewBox: 242.201 x 60 (aspect ~4.04)
+   * @param {number} scale - Scale factor
+   * @param {number} alpha - Overall alpha
+   * @param {number} textAlpha - Alpha for the "VAST" text portion (fades separately)
+   */
+  _drawVastLogo: function(context, scale, alpha, textAlpha) {
+    if (!this.vastLogoLoaded) return;
+    
+    // VAST logo positioning - centered below middle, más grande
+    var aspectRatio = this.vastLogoSize.w / this.vastLogoSize.h;  // ~4.04
+    var maxWidth = Game.canvasWidth * 0.35;  // Tamaño apropiado
+    var w = maxWidth * scale;
+    var h = w / aspectRatio;
+    
+    // Center the logo horizontally, position below vertical center
+    var x = (Game.canvasWidth - w) / 2;
+    var y = Game.canvasHeight * 0.50;  // Abajo del logo VASTEROIDS
+    
+    context.save();
+    context.globalAlpha = alpha;
+    context.drawImage(this.vastLogo, x, y, w, h);
+    context.restore();
+  },
+
+  /**
+   * Draw legacy logo image (fallback)
    */
   _drawLogo: function(context, introScale, introAlpha) {
+    if (!this.logoLoaded) return;
+    
     var fit = Math.min(
       (Game.canvasWidth * 0.58) / this.logoSize.w,
       (Game.canvasHeight * 0.43) / this.logoSize.h
@@ -249,39 +352,52 @@ var IntroManager = {
   },
 
   /**
-   * Draw ship during intro
+   * Draw ship during intro (takes over from VAST logo ship icon)
    */
   _drawShipOverlay: function(context, ship, elapsed, introScale, shipAlpha) {
-    var fit = Math.min(
-      (Game.canvasWidth * 0.58) / this.logoSize.w,
-      (Game.canvasHeight * 0.43) / this.logoSize.h
-    );
+    if (!ship || shipAlpha < 0.01 || !this.vastLogoLoaded) return;
     
-    var shipBaseHeight = 36.4;
-    var shipBaseWidth = 35.0;
-    var aHeightPixels = 185 * fit * introScale;
-    var aWidthPixels = 179 * fit * introScale;
-    var shipScaleH = aHeightPixels / shipBaseHeight;
-    var shipScaleW = aWidthPixels / shipBaseWidth;
-    var shipScale = Math.min(shipScaleH, shipScaleW);
+    // Match the ship icon inside the VAST logo
+    var aspectRatio = this.vastLogoSize.w / this.vastLogoSize.h;  // ~4.04
+    var logoWidth = Game.canvasWidth * 0.35;
+    var logoHeight = logoWidth / aspectRatio;
+    var logoX = (Game.canvasWidth - logoWidth) / 2;
+    var logoY = Game.canvasHeight * 0.50;
+    
+    // Icon pivot is at (34.5, 23.5) in the logo's viewBox coordinates
+    // Scale these coordinates to match the drawn logo size
+    var scaleX = logoWidth / this.vastLogoSize.w;
+    var scaleY = logoHeight / this.vastLogoSize.h;
+    var shipX = logoX + (34.5 * scaleX);
+    var shipY = logoY + (23.5 * scaleY);
 
     context.save();
     context.globalAlpha = shipAlpha;
     context.strokeStyle = THEME.primary;
     context.lineWidth = 1.0;
     
-    ship.x = Game.canvasWidth / 2;
-    ship.y = Game.canvasHeight / 2;
-    
+    var originalX = ship.x;
+    var originalY = ship.y;
     var originalScale = ship.scale;
     var originalVisible = ship.visible;
+    var originalRot = ship.rot;
     
+    var introRot = (typeof window.SHIP_INTRO_ROT_DEG !== 'undefined') ? window.SHIP_INTRO_ROT_DEG : 0;
+    ship.x = shipX;
+    ship.y = shipY;
     ship.visible = true;
-    ship.scale = shipScale;
+    ship.rot = introRot;  // Match logo icon orientation
+    // Scale ship to match logo height
+    var shipBaseHeight = SHIP_BODY_HEIGHT; // ship SVG height
+    ship.scale = (logoHeight * 0.95) / shipBaseHeight;
     ship.configureTransform();
     ship.draw();
+    
+    ship.x = originalX;
+    ship.y = originalY;
     ship.scale = originalScale;
     ship.visible = originalVisible;
+    ship.rot = originalRot;
     
     context.restore();
   },

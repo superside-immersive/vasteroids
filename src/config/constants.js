@@ -14,8 +14,7 @@ var KEY_CODES = {
   70: 'f',
   71: 'g',
   72: 'h',
-  77: 'm',
-  80: 'p'
+  77: 'm'
 };
 
 // Key status tracker

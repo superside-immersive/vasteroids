@@ -158,10 +158,10 @@ var LevelTransitionManager = (function() {
     ship.visible = true;
 
     var timeline = anime.timeline({ autoplay: true });
-    // Rotate ship to point RIGHT (90 degrees clockwise)
+    // Rotate ship to point RIGHT (match calibrated forward vector)
     timeline.add({
       targets: shipOverlay,
-      rot: 90, // 90 degrees = pointing right
+      rot: 29.1, // Point right (compensate cyan tip offset)
       duration: 900,
       easing: 'easeOutCubic'
     });
@@ -284,10 +284,12 @@ var LevelTransitionManager = (function() {
 
   function finishShipOverlay() {
     if (!shipOverlay.active || !shipOverlay.ship) return;
-    // Keep ship in its current position and facing RIGHT (90 degrees)
-    shipOverlay.ship.rot = 90;
+    // Restore original ship state (don't force a fixed rotation)
     shipOverlay.ship.visible = true;
     if (shipOverlay.origin) {
+      shipOverlay.ship.x = shipOverlay.origin.x;
+      shipOverlay.ship.y = shipOverlay.origin.y;
+      shipOverlay.ship.rot = shipOverlay.origin.rot;
       shipOverlay.ship.scale = shipOverlay.origin.scale;
     }
     if (shipOverlay.ship.vel) {
@@ -295,6 +297,15 @@ var LevelTransitionManager = (function() {
       shipOverlay.ship.vel.y = 0;
     }
     shipOverlay.active = false;
+  }
+
+  function reset() {
+    active = false;
+    startTime = 0;
+    waveBanner.show = false;
+    waveBanner.alpha = 0;
+    finishShipOverlay();
+    shipOverlay.ship = null;
   }
 
   // Hook into lifecycle end
@@ -316,6 +327,7 @@ var LevelTransitionManager = (function() {
     start: start,
     render: render,
     isActive: isActive,
+    reset: reset,
     _finishShipOverlay: finishShipOverlay,
     _resetShipOverlayIfDone: resetShipOverlayIfDone
   };

@@ -1,0 +1,46 @@
+<svg preserveAspectRatio="xMidYMid meet" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 72 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Similarity_Orb">
+<g id="Group 146" filter="url(#filter0_f_2009_178)">
+<circle id="4" cx="25" cy="29" r="15" fill="var(--fill-0, #049A72)"/>
+<circle id="3" cx="42" cy="25" r="15" fill="var(--fill-0, #18A3D1)"/>
+<circle id="2" cx="32" cy="49" r="15" fill="var(--fill-0, #D91247)"/>
+<circle id="1" cx="47" cy="41" r="15" fill="var(--fill-0, #E09600)"/>
+</g>
+<g id="Ellipse 67" filter="url(#filter1_f_2009_178)">
+<circle cx="37" cy="38" r="12" fill="var(--fill-0, #FFF6F6)"/>
+</g>
+<g id="white" filter="url(#filter2_gf_2009_178)">
+<g id="Ellipse 67_2" filter="url(#filter3_f_2009_178)">
+<circle cx="37" cy="38" r="15" fill="var(--fill-0, #FFF6F6)"/>
+</g>
+<circle id="Ellipse 68" cx="37" cy="38" r="12" stroke="var(--stroke-0, white)" stroke-width="6"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_2009_178" x="0" y="0" width="72" height="74" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="5" result="effect1_foregroundBlur_2009_178"/>
+</filter>
+<filter id="filter1_f_2009_178" x="5" y="6" width="64" height="64" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_2009_178"/>
+</filter>
+<filter id="filter2_gf_2009_178" x="16" y="17" width="42" height="42" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="2 2" numOctaves="3" seed="590" />
+<feDisplacementMap in="shape" scale="12" xChannelSelector="R" yChannelSelector="G" result="displacedImage" width="100%" height="100%" />
+<feMerge result="effect1_texture_2009_178">
+<feMergeNode in="displacedImage"/>
+</feMerge>
+<feGaussianBlur stdDeviation="0.5" result="effect2_foregroundBlur_2009_178"/>
+</filter>
+<filter id="filter3_f_2009_178" x="2" y="3" width="70" height="70" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_2009_178"/>
+</filter>
+</defs>
+</svg>

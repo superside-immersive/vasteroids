@@ -189,7 +189,7 @@ var Scoreboard = (function() {
     for (var i = 0; i < 100; i++) {
       var baseName = namePool[i % namePool.length];
       var suffix = (i >= namePool.length) ? String(i % 10) : '';
-      var name = (baseName + suffix).substring(0, 8);
+      var name = (baseName + suffix).substring(0, 10);
 
       var ratio = 0.86 + (Math.random() * 0.08);
       score = Math.max(250, Math.floor(score * ratio - (Math.random() * 1200)));
@@ -349,13 +349,21 @@ var Scoreboard = (function() {
   }
 
   // Submit score to server
-  function submitScore(name, score) {
+  function submitScore(name, score, meta) {
     var clientSubmissionId = 'c-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+    var achievementIcon = meta && meta.achievementIcon ? meta.achievementIcon : null;
+    var normalizedName = String(name || 'ACE')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .substring(0, 10);
+    if (!normalizedName) normalizedName = 'ACE';
     var entry = { 
       id: Date.now() + Math.random(), 
-      name: name || 'ACE', 
+      name: normalizedName, 
       score: score || 0,
-      clientSubmissionId: clientSubmissionId
+      clientSubmissionId: clientSubmissionId,
+      achievementIcon: achievementIcon
     };
 
     // Add locally first for immediate feedback
@@ -376,12 +384,16 @@ var Scoreboard = (function() {
     return safeFetch(SERVER_URL + '/api/scores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: entry.name, score: entry.score, clientSubmissionId: clientSubmissionId })
+      body: JSON.stringify({ name: entry.name, score: entry.score, clientSubmissionId: clientSubmissionId, achievementIcon: achievementIcon })
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
       if (data.success && data.scores) {
-        scores = data.scores;
+        var serverRank = (typeof data.rank === 'number') ? data.rank : null;
+        var keepLocalForReveal = serverRank && data.scores.length && serverRank > data.scores.length;
+        if (!keepLocalForReveal) {
+          scores = data.scores;
+        }
         // Update lastAddedId to server-generated ID
         lastAddedId = data.entry.id;
         if (typeof data.rank === 'number') {
@@ -492,35 +504,42 @@ var Scoreboard = (function() {
 
     overlay = document.createElement('div');
     overlay.className = 'ui-overlay interactive hidden';
-    // Add semi-transparent background so it's visible over the canvas
-    overlay.style.backgroundColor = 'rgba(14, 20, 44, 0.85)';
+    // Keep background transparent so stars/game show through
+    overlay.style.backgroundColor = 'transparent';
+
+    var shell = document.createElement('div');
+    shell.className = 'ui-panel scoreboard-shell';
 
     panel = document.createElement('div');
-    panel.className = 'ui-panel scoreboard-panel';
+    panel.className = 'scoreboard-panel';
 
     var title = document.createElement('div');
-    title.className = 'text-glow';
-    title.style.fontSize = '22px';
-    title.style.marginBottom = '10px';
+    title.className = 'scoreboard-title text-glow';
     title.textContent = 'SCOREBOARD';
 
     var table = document.createElement('table');
     table.className = 'scoreboard-table';
     var thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>#</th><th>NAME</th><th>SCORE</th></tr>';
+    thead.innerHTML = '<tr><th class="col-rank">#</th><th class="col-badge"></th><th class="col-name">NAME</th><th class="col-score">SCORE</th></tr>';
     tableBody = document.createElement('tbody');
     table.appendChild(thead);
     table.appendChild(tableBody);
 
-    prompt = document.createElement('div');
-    prompt.className = 'prompt-pill';
-    prompt.style.marginTop = '10px';
-    prompt.textContent = 'PRESS START TO INITIALIZE';
+    var indicator = document.createElement('div');
+    indicator.className = 'scoreboard-scroll-indicator';
+    indicator.innerHTML = '<span class="scoreboard-scroll-dot"></span>';
 
-    panel.appendChild(title);
+    prompt = document.createElement('div');
+    prompt.className = 'prompt-pill scoreboard-cta';
+    prompt.textContent = 'Press Start to Play';
+
     panel.appendChild(table);
-    panel.appendChild(prompt);
-    overlay.appendChild(panel);
+    panel.appendChild(indicator);
+
+    shell.appendChild(title);
+    shell.appendChild(panel);
+    shell.appendChild(prompt);
+    overlay.appendChild(shell);
     (container || document.body).appendChild(overlay);
   }
 
@@ -628,8 +647,8 @@ var Scoreboard = (function() {
   }
 
   // Keep old addEntry for backward compatibility, but prefer submitScore
-  function addEntry(name, score) {
-    return submitScore(name, score);
+  function addEntry(name, score, meta) {
+    return submitScore(name, score, meta);
   }
 
   // Render 10 rows starting from startIdx
@@ -638,6 +657,15 @@ var Scoreboard = (function() {
     tableBody.innerHTML = '';
     startIdx = Math.max(0, Math.min(startIdx, scores.length - VISIBLE_ROWS));
     currentViewStart = startIdx;
+
+    function normalizeBadgeIcon(icon) {
+      if (!icon) return null;
+      if (icon.indexOf('.png') !== -1) return icon;
+      if (icon === '👑') return 'assets/Badge_Exabyte_Legend_60.png';
+      if (icon === '🏗️') return 'assets/Badge_Petabyte_Architect_40.png';
+      if (icon === '🧪') return 'assets/Badge_Data_Engineer_20.png';
+      return icon;
+    }
     
     for (var i = startIdx; i < startIdx + VISIBLE_ROWS && i < scores.length; i++) {
       var row = document.createElement('tr');
@@ -647,11 +675,29 @@ var Scoreboard = (function() {
       }
       var rank = document.createElement('td');
       rank.textContent = i + 1;
+      var badgeCell = document.createElement('td');
+      badgeCell.className = 'scoreboard-badge-cell';
       var nameCell = document.createElement('td');
-      nameCell.textContent = scores[i].name;
+      nameCell.className = 'scoreboard-name-cell';
+      var nameText = String(scores[i].name || '').substring(0, 10);
+      var icon = scores[i].achievementIcon || scores[i].achievement_icon;
+      icon = normalizeBadgeIcon(icon);
+      nameCell.textContent = nameText;
+      if (icon) {
+        if (icon.indexOf('.png') !== -1) {
+          var badgeImg = document.createElement('img');
+          badgeImg.className = 'scoreboard-badge-icon';
+          badgeImg.src = icon;
+          badgeImg.alt = 'Achievement';
+          badgeCell.appendChild(badgeImg);
+        } else {
+          badgeCell.textContent = icon;
+        }
+      }
       var scoreCell = document.createElement('td');
       scoreCell.textContent = scores[i].score;
       row.appendChild(rank);
+      row.appendChild(badgeCell);
       row.appendChild(nameCell);
       row.appendChild(scoreCell);
       tableBody.appendChild(row);
@@ -660,11 +706,14 @@ var Scoreboard = (function() {
       var emptyRow = document.createElement('tr');
       var emptyRank = document.createElement('td');
       emptyRank.textContent = j + 1;
+      var emptyBadge = document.createElement('td');
+      emptyBadge.textContent = '';
       var emptyName = document.createElement('td');
       emptyName.textContent = '---';
       var emptyScore = document.createElement('td');
       emptyScore.textContent = '---';
       emptyRow.appendChild(emptyRank);
+      emptyRow.appendChild(emptyBadge);
       emptyRow.appendChild(emptyName);
       emptyRow.appendChild(emptyScore);
       tableBody.appendChild(emptyRow);

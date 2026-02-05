@@ -92,6 +92,9 @@ var GameFSM = {
    * Start a new game
    */
   start: function () {
+    if (window.LevelTransitionManager && typeof LevelTransitionManager.reset === 'function') {
+      LevelTransitionManager.reset();
+    }
     if (window.Scoreboard) { 
       Scoreboard.hide(true); // Force hide immediately
       Scoreboard.stopAutoShow(); // Stop auto-show during gameplay
@@ -127,6 +130,7 @@ var GameFSM = {
     // Play game start sound
     SFX.gameStart();
     
+    this._showInstructionBillboard = true;
     this.state = 'spawn_ship';
   },
 
@@ -134,8 +138,20 @@ var GameFSM = {
    * Spawn player ship
    */
   spawn_ship: function () {
-    Game.ship.x = Game.canvasWidth / 2;
-    Game.ship.y = Game.canvasHeight / 2;
+    // Reset ship to VAST logo icon position (match intro logo)
+    var aspectRatio = IntroManager && IntroManager.vastLogoSize
+      ? (IntroManager.vastLogoSize.w / IntroManager.vastLogoSize.h)
+      : (242.201 / 60);
+    var logoWidth = Game.canvasWidth * 0.35;
+    var logoHeight = logoWidth / aspectRatio;
+    var logoX = (Game.canvasWidth - logoWidth) / 2;
+    var logoY = Game.canvasHeight * 0.50;
+    // Pivot is at (34.5, 23.5) in viewBox coordinates - scale to match drawn logo
+    var vastLogoSize = IntroManager && IntroManager.vastLogoSize ? IntroManager.vastLogoSize : { w: 242.201, h: 60 };
+    var scaleX = logoWidth / vastLogoSize.w;
+    var scaleY = logoHeight / vastLogoSize.h;
+    Game.ship.x = logoX + (34.5 * scaleX);
+    Game.ship.y = logoY + (23.5 * scaleY);
 
     // Create shockwave effect that clears asteroids (visible feedback)
     var spawnClearRadius = 100;
@@ -143,13 +159,22 @@ var GameFSM = {
 
     // Keep ship visible immediately; state gate controls when it can move/shoot.
     Game.ship.visible = true;
-    Game.ship.rot = 0;
+    var startRot = (typeof window.SHIP_START_ROT_DEG !== 'undefined') ? window.SHIP_START_ROT_DEG : 0;
+    Game.ship.rot = startRot;
     Game.ship.vel.x = 0;
     Game.ship.vel.y = 0;
+    // Scale ship to match logo icon height
+    var shipBaseHeight = SHIP_BODY_HEIGHT;
+    Game.ship.scale = (logoHeight * 0.95) / shipBaseHeight;
     
     // Activate protective shield for 3 seconds on respawn
     Game.ship.protectiveShield = 180; // 3 seconds at 60fps
     Game.ship.protectiveShieldRadius = 56;
+
+    if (window.HUD && typeof HUD.showInstructionBillboard === 'function' && this._showInstructionBillboard !== false) {
+      HUD.showInstructionBillboard();
+    }
+    this._showInstructionBillboard = false;
     
     // Immediately transition to run state (no waiting)
     this.state = 'run';
@@ -198,6 +223,11 @@ var GameFSM = {
       this.timer = Date.now();
       if (window.LevelTransitionManager) {
         LevelTransitionManager.start(Game.ship);
+      }
+
+      // If DASE was disabled (beam severed), clear it on level transition
+      if (window.DASEMode && DASEMode.beamSevered && typeof DASEMode.isActive === 'function' && DASEMode.isActive()) {
+        DASEMode.deactivate();
       }
 
       // Hide UFO + any alien bullets during the level transition

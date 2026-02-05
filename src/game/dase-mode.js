@@ -4,6 +4,10 @@
  * Spawns orbiting turret with energy beam connection
  */
 
+// Preload turret sprite
+var TURRET_IMG = new Image();
+TURRET_IMG.src = 'assets/images/turret.svg';
+
 var DASEMode = (function() {
   // DASE Meter state
   var fragments = 0;
@@ -168,29 +172,38 @@ var DASEMode = (function() {
     ctx.save();
     ctx.translate(this.x, this.y);
     
-    var color = this.disabled ? '#666666' : '#1FD9FE';
-    var fillColor = this.disabled ? 'rgba(100, 100, 100, 0.5)' : 'rgba(31, 217, 254, 0.5)';
+    var size = 36;
     
-    // Draw turret as a larger diamond shape
-    ctx.beginPath();
-    ctx.moveTo(0, -16);
-    ctx.lineTo(12, 0);
-    ctx.lineTo(0, 16);
-    ctx.lineTo(-12, 0);
-    ctx.closePath();
-    
-    ctx.fillStyle = fillColor;
-    ctx.fill();
-    
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    // Inner core
-    ctx.beginPath();
-    ctx.arc(0, 0, 5, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
+    // Draw turret using sprite
+    if (TURRET_IMG.complete && TURRET_IMG.naturalWidth > 0) {
+      if (this.disabled) {
+        ctx.globalAlpha = 0.5;
+      }
+      ctx.drawImage(TURRET_IMG, -size/2, -size/2, size, size);
+    } else {
+      // Fallback: diamond shape
+      var color = this.disabled ? '#666666' : '#1FD9FE';
+      var fillColor = this.disabled ? 'rgba(100, 100, 100, 0.5)' : 'rgba(31, 217, 254, 0.5)';
+      
+      ctx.beginPath();
+      ctx.moveTo(0, -16);
+      ctx.lineTo(12, 0);
+      ctx.lineTo(0, 16);
+      ctx.lineTo(-12, 0);
+      ctx.closePath();
+      
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+      
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
     
     ctx.restore();
   };
@@ -342,6 +355,11 @@ var DASEMode = (function() {
       
       // Schedule Silo (Latency Drone) spawn - appears later in DASE to give player time
       siloSpawnTimer = 420 + Math.random() * 180; // 7-10 seconds after DASE starts
+      
+      // Show DASE logo animation
+      if (window.HUD && HUD.showDASELogo) {
+        HUD.showDASELogo();
+      }
       
       SFX.daseActivate();
     },

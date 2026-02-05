@@ -1,6 +1,6 @@
 /**
  * Ship Entity
- * Player-controlled spaceship
+ * Player-controlled spaceship with VAST logo design
  */
 
 // Generate offsets so clones form readable triangles per upgrade level
@@ -51,40 +51,92 @@ function approxSpriteRadius(sprite) {
   return maxR * (sprite.scale || 1);
 }
 
+// Ship SVG assets (preloaded)
+var ShipAssets = {
+  body: null,
+  thrust: null,
+  bodyLoaded: false,
+  thrustLoaded: false,
+  
+  init: function() {
+    var self = this;
+    
+    // Load ship body SVG
+    this.body = new Image();
+    this.body.onload = function() { self.bodyLoaded = true; };
+    this.body.src = 'assets/images/ship-body.svg';
+    
+    // Load ship thrust SVG
+    this.thrust = new Image();
+    this.thrust.onload = function() { self.thrustLoaded = true; };
+    this.thrust.src = 'assets/images/ship-thrust.svg';
+  },
+  
+  isReady: function() {
+    return this.bodyLoaded && this.thrustLoaded;
+  }
+};
+
+// The ship SVG is from VAST logo (viewBox: 0 0 70 60)
+// Pivot marker is at (34.5, 23.5) in the SVG
+var SHIP_SVG_ROTATION_CORRECTION_DEG = 0;
+// Fine-tune to align shots perfectly with cyan tip edge
+var SHIP_CYAN_TIP_OFFSET_DEG = -29.1;
+// Ship body draw dimensions from VAST logo icon
+var SHIP_BODY_WIDTH = 70;
+var SHIP_BODY_HEIGHT = 60;
+// Pivot offset matches the circle marker in VAST_Logo.svg (34.5, 23.5)
+// Adjusted to center: pivot is at (34.5, 23.5), center is at (35, 30)
+var SHIP_PIVOT_OFFSET_X = -0.5;
+var SHIP_PIVOT_OFFSET_Y = -6.5;
+// Cyan tip location in ship local space (cyan arrow tip at right)
+var SHIP_TIP_LOCAL_X = 35.0;
+var SHIP_TIP_LOCAL_Y = -10.0;
+
+function getShipAngleOffsetDeg() {
+  return (typeof window !== 'undefined' && window.SHIP_CYAN_TIP_OFFSET_DEG != null)
+    ? window.SHIP_CYAN_TIP_OFFSET_DEG
+    : SHIP_CYAN_TIP_OFFSET_DEG;
+}
+
+function getShipTipLocalX() {
+  return (typeof window !== 'undefined' && window.SHIP_TIP_LOCAL_X != null)
+    ? window.SHIP_TIP_LOCAL_X
+    : SHIP_TIP_LOCAL_X;
+}
+
+function getShipTipLocalY() {
+  return (typeof window !== 'undefined' && window.SHIP_TIP_LOCAL_Y != null)
+    ? window.SHIP_TIP_LOCAL_Y
+    : SHIP_TIP_LOCAL_Y;
+}
+
+function getShipPivotOffsetX() {
+  return (typeof window !== 'undefined' && window.SHIP_PIVOT_OFFSET_X != null)
+    ? window.SHIP_PIVOT_OFFSET_X
+    : SHIP_PIVOT_OFFSET_X;
+}
+
+function getShipPivotOffsetY() {
+  return (typeof window !== 'undefined' && window.SHIP_PIVOT_OFFSET_Y != null)
+    ? window.SHIP_PIVOT_OFFSET_Y
+    : SHIP_PIVOT_OFFSET_Y;
+}
+
+// Initialize ship assets
+ShipAssets.init();
+
 var Ship = function () {
-  // Ship shape based on A.svg path - high resolution polygon
+  // Collision polygon - adjusted to match VAST logo ship orientation
+  // In VAST logo: ship points to the right, with cyan tip at front
   this.init("ship", [
-    0.0, -18.1,     // top center point
-    3.5, -16.1,     // right of top
-    7.0, -10.0,     // right upper slope
-    11.0, -2.0,     // right mid-upper
-    14.5, 6.0,      // right mid
-    17.5, 13.5,     // right lower outer
-    16.3, 16.9,     // right bottom curve
-    14.0, 18.3,     // right bottom
-    12.7, 18.3,     // right base
-    10.5, 16.5,     // right inner start
-    9.0, 13.5,      // right inner
-    6.0, 6.0,       // right inner mid
-    3.0, -1.0,      // right inner upper
-    0.0, -5.3,      // center notch (top of A hole)
-    -3.0, -1.0,     // left inner upper
-    -6.0, 6.0,      // left inner mid
-    -9.0, 13.5,     // left inner
-    -10.5, 16.5,    // left inner start
-    -12.7, 18.3,    // left base
-    -14.0, 18.3,    // left bottom
-    -16.3, 16.9,    // left bottom curve
-    -17.5, 13.5,    // left lower outer
-    -14.5, 6.0,     // left mid
-    -11.0, -2.0,    // left mid-upper
-    -7.0, -10.0,    // left upper slope
-    -3.5, -16.1     // left of top
+    22.0, 0.0,      // front point (cyan tip, points right)
+    -20.0, -18.0,   // back top
+    -20.0, 18.0     // back bottom
   ]);
 
-  // Exhaust flame
-  this.children.exhaust = new Sprite();
-  this.children.exhaust.init("exhaust", [-4, 20, 0, 28, 4, 20]);
+  // Exhaust visible flag (no longer a child sprite - we draw SVG thrust)
+  this.showThrust = false;
 
   this.bulletCounter = 0;
   this.hitCooldown = 0;
@@ -128,7 +180,7 @@ var Ship = function () {
       this.vel.y = 0;
       this.acc.x = 0;
       this.acc.y = 0;
-      this.children.exhaust.visible = false;
+      this.showThrust = false;
       return; // Skip all input processing
     }
     
@@ -143,14 +195,15 @@ var Ship = function () {
 
     // Thrust control
     if (KEY_STATUS.up) {
-      var rad = ((this.rot - 90) * Math.PI) / 180;
+      // Forward direction should align with cyan tip
+      var rad = ((this.rot + SHIP_SVG_ROTATION_CORRECTION_DEG + getShipAngleOffsetDeg()) * Math.PI) / 180;
       this.acc.x = GAME_CONFIG.ship.thrustAcceleration * Math.cos(rad);
       this.acc.y = GAME_CONFIG.ship.thrustAcceleration * Math.sin(rad);
-      this.children.exhaust.visible = Math.random() > 0.1;
+      this.showThrust = Math.random() > 0.1;
     } else {
       this.acc.x = 0;
       this.acc.y = 0;
-      this.children.exhaust.visible = false;
+      this.showThrust = false;
     }
     
     // Apply drag (slight friction) for easier control
@@ -187,7 +240,8 @@ var Ship = function () {
           if (!this.bullets[i].visible) {
             SFX.laser();
             var bullet = this.bullets[i];
-            var rad = ((this.rot - 90) * Math.PI) / 180;
+            // Fire from cyan tip direction
+            var rad = ((this.rot + SHIP_SVG_ROTATION_CORRECTION_DEG + getShipAngleOffsetDeg()) * Math.PI) / 180;
             
             // Fire from the ship center with slight angle spread for multiple bullets
             var angleSpread = 0;
@@ -199,9 +253,17 @@ var Ship = function () {
             var spreadX = Math.cos(spreadRad);
             var spreadY = Math.sin(spreadRad);
             
-            // Spawn from the CENTER of the whole formation (group centered in draw)
-            bullet.x = this.x + spreadX * 4;
-            bullet.y = this.y + spreadY * 4;
+            // Spawn from the cyan tip of the ship (front point)
+            var tipLocalX = getShipTipLocalX() - getShipPivotOffsetX();
+            var tipLocalY = getShipTipLocalY() - getShipPivotOffsetY();
+            var tipX = tipLocalX * (this.scale || 1);
+            var tipY = tipLocalY * (this.scale || 1);
+            var cosR = Math.cos(rad);
+            var sinR = Math.sin(rad);
+            var tipWorldX = tipX * cosR - tipY * sinR;
+            var tipWorldY = tipX * sinR + tipY * cosR;
+            bullet.x = this.x + tipWorldX;
+            bullet.y = this.y + tipWorldY;
             bullet.vel.x = GAME_CONFIG.bullet.speed * spreadX;
             bullet.vel.y = GAME_CONFIG.bullet.speed * spreadY;
             bullet.visible = true;
@@ -398,20 +460,28 @@ var Ship = function () {
 
 Ship.prototype = new Sprite();
 
-// Draw multiple tightly overlapped ships according to current upgrade level
+// Draw ship using SVG images
+// The ship SVG is oriented as in the Figma logo (pointing down-left ~150° from up)
+// We rotate it by -150° to make it point UP, then the game rotation works normally
 Ship.prototype.draw = function () {
   if (!this.visible) return;
 
   var ctx = this.context;
-  var offsets = getFractalOffsets(Game.upgradeLevel);
-  var lineW = 1.0 / this.scale;
+  // Keep visuals at base level (no clone upgrade), firing upgrades stay active
+  var offsets = getFractalOffsets(0);
+
+  // Ship SVG dimensions from viewBox (75 x 65)
+  var shipWidth = SHIP_BODY_WIDTH;
+  var shipHeight = SHIP_BODY_HEIGHT;
+  
+  // Apply correction so the cyan tip aligns with the ship's forward vector
+  var svgRotationCorrection = SHIP_SVG_ROTATION_CORRECTION_DEG * Math.PI / 180;
 
   var count = offsets.length;
   for (var i = 0; i < count; i++) {
     var off = offsets[i];
     ctx.save();
     ctx.translate(off.x, off.y);
-    ctx.lineWidth = lineW;
 
     // Smooth sequenced transparency across the formation
     if (count > 1) {
@@ -420,19 +490,79 @@ Ship.prototype.draw = function () {
       ctx.globalAlpha = 1.0;
     }
 
-    for (var child in this.children) {
-      this.children[child].draw();
-    }
+    // Apply rotation correction for SVG orientation
+    ctx.rotate(svgRotationCorrection);
 
+    // Shift visuals so rotation pivot aligns with visual center
+    var pivotX = getShipPivotOffsetX();
+    var pivotY = getShipPivotOffsetY();
+    ctx.translate(-pivotX, -pivotY);
+
+    // Maintain collision path for isPointInPath checks
     ctx.beginPath();
-    ctx.moveTo(this.points[0], this.points[1]);
-    for (var p = 1; p < this.points.length / 2; p++) {
-      var xi = p * 2;
-      var yi = xi + 1;
-      ctx.lineTo(this.points[xi], this.points[yi]);
+    ctx.moveTo(this.points[0] - pivotX, this.points[1] - pivotY);
+    for (var p = 2; p < this.points.length; p += 2) {
+      ctx.lineTo(this.points[p] - pivotX, this.points[p + 1] - pivotY);
     }
     ctx.closePath();
-    ctx.stroke();
+
+    // Draw thrust glow FIRST (behind ship body) when accelerating
+    if (this.showThrust && ShipAssets.thrustLoaded) {
+      ctx.save();
+      // Position thrust exactly opposite the cyan tip
+      var thrustScale = 0.55;
+      var thrustWidth = 138 * thrustScale;
+      var thrustHeight = 158 * thrustScale;
+      // Same local tip used for bullets (relative to ship center)
+      var tipLocalX = getShipTipLocalX() - getShipPivotOffsetX();
+      var tipLocalY = getShipTipLocalY() - getShipPivotOffsetY();
+      // Opposite direction of tip
+      var thrustCenterX = -tipLocalX;
+      var thrustCenterY = -tipLocalY;
+      ctx.globalAlpha *= 0.85;
+      ctx.drawImage(
+        ShipAssets.thrust,
+        thrustCenterX - thrustWidth * 0.5,
+        thrustCenterY - thrustHeight * 0.4,
+        thrustWidth,
+        thrustHeight
+      );
+      // Extra pass to boost visibility
+      var boostScale = 1.12;
+      ctx.globalAlpha *= 0.85;
+      ctx.drawImage(
+        ShipAssets.thrust,
+        thrustCenterX - (thrustWidth * boostScale) * 0.5,
+        thrustCenterY - (thrustHeight * boostScale) * 0.4,
+        thrustWidth * boostScale,
+        thrustHeight * boostScale
+      );
+      ctx.restore();
+    }
+
+    // Draw ship body SVG
+    if (ShipAssets.bodyLoaded) {
+      ctx.drawImage(
+        ShipAssets.body,
+        -shipWidth / 2,
+        -shipHeight / 2,
+        shipWidth,
+        shipHeight
+      );
+    } else {
+      // Fallback: draw collision polygon outline while loading
+      ctx.beginPath();
+      ctx.moveTo(this.points[0], this.points[1]);
+      for (var p = 1; p < this.points.length / 2; p++) {
+        var xi = p * 2;
+        var yi = xi + 1;
+        ctx.lineTo(this.points[xi], this.points[yi]);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = '#1FD9FE';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
 
     ctx.restore();
   }
@@ -440,7 +570,7 @@ Ship.prototype.draw = function () {
   // Draw protective shield ring if active
   if (this.protectiveShield > 0) {
     ctx.save();
-    
+    // Shield is centered on the ship's rotation center (no pivot offset)
     var shieldAlpha = Math.min(1, this.protectiveShield / 60); // Fade out in last second
     var pulseSpeed = 0.15;
     var pulse = 0.7 + Math.sin(Date.now() * pulseSpeed * 0.01) * 0.3;

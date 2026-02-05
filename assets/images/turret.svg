@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="xMidYMid meet" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 79.2295 79.2295" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Turret">
+<path id="Polygon 10" d="M27.1151 23.16C27.1153 20.8508 29.6145 19.4079 31.6144 20.5624L60.1149 37.0166C62.1148 38.1713 62.1144 41.0583 60.1144 42.213L31.6151 58.6671C29.6151 59.8218 27.1146 58.3787 27.1146 56.0693L27.1151 23.16Z" fill="var(--fill-0, #18A3D1)" stroke="var(--stroke-0, #8AECFF)" stroke-width="4"/>
+<path id="Polygon 11" d="M53.1785 19.6029C53.1785 18.0633 51.5118 17.1011 50.1785 17.8709L40.7622 23.3074C39.4289 24.0772 39.4289 26.0017 40.7622 26.7715L50.1785 32.208C51.5118 32.9778 53.1785 32.0155 53.1785 30.4759L53.1785 19.6029Z" fill="var(--fill-0, #8AECFF)"/>
+<path id="Polygon 12" d="M53.1785 59.4759C53.1785 61.0155 51.5118 61.9778 50.1785 61.208L40.7622 55.7715C39.4289 55.0017 39.4289 53.0772 40.7622 52.3074L50.1785 46.8709C51.5118 46.1011 53.1785 47.0633 53.1785 48.6029L53.1785 59.4759Z" fill="var(--fill-0, #8AECFF)"/>
+<g id="Ellipse 51" filter="url(#filter0_f_2009_154)">
+<circle cx="41" cy="39" r="6" fill="var(--fill-0, #1FD9FE)"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_2009_154" x="31" y="29" width="20" height="20" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2" result="effect1_foregroundBlur_2009_154"/>
+</filter>
+</defs>
+</svg>

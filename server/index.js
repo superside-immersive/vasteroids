@@ -24,6 +24,23 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const MAX_SCORES = 100;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
+const ALLOWED_ACHIEVEMENT_ICONS = {
+  'assets/Badge_Data_Engineer_20.png': true,
+  'assets/Badge_Petabyte_Architect_40.png': true,
+  'assets/Badge_Exabyte_Legend_60.png': true,
+  // legacy emoji entries
+  '🧪': true,
+  '🏗️': true,
+  '👑': true
+};
+
+function normalizeAchievementIcon(icon) {
+  if (!icon) return null;
+  if (icon === '🧪') return 'assets/Badge_Data_Engineer_20.png';
+  if (icon === '🏗️') return 'assets/Badge_Petabyte_Architect_40.png';
+  if (icon === '👑') return 'assets/Badge_Exabyte_Legend_60.png';
+  return icon;
+}
 
 const DEFAULT_DATABASE_URL = 'postgresql://vasteroids:vasteroids@localhost:5432/vasteroids';
 const DATABASE_URL = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
@@ -54,7 +71,7 @@ function buildCorsOptions() {
 }
 
 function normalizeName(input) {
-  const name = String(input || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8);
+  const name = String(input || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 10);
   return name || 'ACE';
 }
 
@@ -95,7 +112,7 @@ function generatePlaceholderEntries(count) {
   for (let i = 0; i < count; i++) {
     const baseName = namePool[i % namePool.length];
     const suffix = (i >= namePool.length) ? ('' + (i % 10)) : '';
-    const name = (baseName + suffix).substring(0, 8);
+    const name = (baseName + suffix).substring(0, 10);
 
     // Decrease with a ratio, add small noise
     const ratio = 0.86 + (rand() * 0.08); // 0.86 - 0.94
@@ -141,13 +158,21 @@ async function applySchema() {
 
 async function getTopScores(limit) {
   const { rows } = await pool.query(
-    `SELECT id, name, score, created_at AS timestamp
+    `SELECT id, name, score,
+            achievement_icon AS "achievementIcon",
+            achievement_icon AS "achievement_icon",
+            created_at AS timestamp
      FROM scores
      ORDER BY score DESC, created_at ASC, id ASC
      LIMIT $1`,
     [limit]
   );
-  return rows;
+  return rows.map(row => {
+    const normalized = normalizeAchievementIcon(row.achievementIcon || row.achievement_icon || null);
+    row.achievementIcon = normalized;
+    row.achievement_icon = normalized;
+    return row;
+  });
 }
 
 async function countScores() {
@@ -165,12 +190,12 @@ async function seedPlaceholdersIfNeeded() {
   const params = [];
   let p = 1;
   for (const e of placeholders) {
-    values.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++})`);
-    params.push(e.id, e.client_submission_id, e.name, e.score, e.placeholder, e.created_at);
+    values.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++})`);
+    params.push(e.id, e.client_submission_id, e.name, e.score, null, e.placeholder, e.created_at);
   }
 
   await pool.query(
-    `INSERT INTO scores (id, client_submission_id, name, score, placeholder, created_at)
+    `INSERT INTO scores (id, client_submission_id, name, score, achievement_icon, placeholder, created_at)
      VALUES ${values.join(',')}
      ON CONFLICT (id) DO NOTHING`,
     params
@@ -188,11 +213,11 @@ async function resetScoresToDefault() {
     const params = [];
     let p = 1;
     for (const e of placeholders) {
-      values.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++})`);
-      params.push(e.id, e.client_submission_id, e.name, e.score, e.placeholder, e.created_at);
+      values.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++})`);
+      params.push(e.id, e.client_submission_id, e.name, e.score, null, e.placeholder, e.created_at);
     }
     await pool.query(
-      `INSERT INTO scores (id, client_submission_id, name, score, placeholder, created_at)
+      `INSERT INTO scores (id, client_submission_id, name, score, achievement_icon, placeholder, created_at)
        VALUES ${values.join(',')}`,
       params
     );
@@ -203,19 +228,26 @@ async function resetScoresToDefault() {
   }
 }
 
-async function insertScore({ name, score, clientSubmissionId }) {
+async function insertScore({ name, score, clientSubmissionId, achievementIcon }) {
   const id = makeId();
   const createdAt = new Date().toISOString();
 
+  const normalizedIcon = normalizeAchievementIcon(achievementIcon);
+  const icon = ALLOWED_ACHIEVEMENT_ICONS[normalizedIcon] ? normalizedIcon : null;
+
   const { rows } = await pool.query(
-    `INSERT INTO scores (id, client_submission_id, name, score, placeholder, created_at)
-     VALUES ($1, $2, $3, $4, false, $5)
+    `INSERT INTO scores (id, client_submission_id, name, score, achievement_icon, placeholder, created_at)
+     VALUES ($1, $2, $3, $4, $5, false, $6)
      ON CONFLICT (client_submission_id) DO UPDATE SET
        name = EXCLUDED.name,
        score = EXCLUDED.score,
+       achievement_icon = EXCLUDED.achievement_icon,
        placeholder = false
-     RETURNING id, name, score, created_at AS timestamp`,
-    [id, clientSubmissionId || null, name, score, createdAt]
+     RETURNING id, name, score,
+               achievement_icon AS "achievementIcon",
+               achievement_icon AS "achievement_icon",
+               created_at AS timestamp`,
+    [id, clientSubmissionId || null, name, score, icon, createdAt]
   );
 
   return rows[0];
@@ -320,12 +352,13 @@ app.post('/api/scores', postLimiter, async (req, res) => {
     const name = normalizeName(req.body && req.body.name);
     const score = normalizeScore(req.body && req.body.score);
     const clientSubmissionId = req.body && req.body.clientSubmissionId ? String(req.body.clientSubmissionId) : null;
+    const achievementIcon = req.body && req.body.achievementIcon ? String(req.body.achievementIcon) : null;
 
     if (score === null) {
       return res.status(400).json({ error: 'Invalid data. Required: name (string), score (number)' });
     }
 
-    const entry = await insertScore({ name, score, clientSubmissionId });
+    const entry = await insertScore({ name, score, clientSubmissionId, achievementIcon });
     const rank = await computeRankForInserted(entry);
 
     // Always return top 100 payload (stable size for clients)

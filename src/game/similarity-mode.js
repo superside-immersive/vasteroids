@@ -18,10 +18,10 @@ var SimilarityMode = (function() {
   
   // Asteroid groupings - now 4 random groups
   var groups = {
-    cyan: [],
-    magenta: [],
+    red: [],
     yellow: [],
-    green: []
+    green: [],
+    blue: []
   };
   
   // Chain destruction state
@@ -40,20 +40,20 @@ var SimilarityMode = (function() {
   
   // Color definitions - 4 colors now
   var colors = {
-    cyan: '#00FFFF',
-    magenta: '#FF00FF', 
-    yellow: '#FFFF00',
-    green: '#00FF00'
+    red: '#FF3B30',
+    yellow: '#FFD60A',
+    green: '#34C759',
+    blue: '#0A84FF'
   };
   
   /**
    * Categorize asteroids randomly into 4 color groups
    */
   function categorizeAsteroids() {
-    groups.cyan = [];
-    groups.magenta = [];
+    groups.red = [];
     groups.yellow = [];
     groups.green = [];
+    groups.blue = [];
     
     // Collect all visible asteroids
     var asteroids = [];
@@ -72,7 +72,7 @@ var SimilarityMode = (function() {
     }
     
     // Distribute evenly across 4 groups (round-robin)
-    var groupNames = ['cyan', 'magenta', 'yellow', 'green'];
+    var groupNames = ['red', 'yellow', 'green', 'blue'];
     for (var i = 0; i < asteroids.length; i++) {
       var groupName = groupNames[i % 4];
       groups[groupName].push(asteroids[i]);
@@ -276,10 +276,10 @@ var SimilarityMode = (function() {
       }
     }
     
-    groups.cyan = [];
-    groups.magenta = [];
+    groups.red = [];
     groups.yellow = [];
     groups.green = [];
+    groups.blue = [];
   }
   
   /**
@@ -340,10 +340,10 @@ var SimilarityMode = (function() {
       chainBonus = 0;
       chainGroupSize = 0;
       implosionParticles = [];
-      groups.cyan = [];
-      groups.magenta = [];
+      groups.red = [];
       groups.yellow = [];
       groups.green = [];
+      groups.blue = [];
     },
     
     /**

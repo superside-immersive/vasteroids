@@ -10,9 +10,6 @@
     <script src="vector_battle_regular.typeface.js"></script>
     <script src="ipad.js"></script>
 
-    <!-- Web Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
-
     <!-- UI Styles -->
     <link rel="stylesheet" href="src/styles/ui.css">
     
@@ -63,7 +60,7 @@
       body { 
         background: #0E142C; 
         color: #E5E7EB; 
-        font-family: 'Courier New', monospace;
+        font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
         margin: 0;
         padding: 20px;
       }
@@ -86,7 +83,7 @@
         border: 1px solid #1FD9FE; 
         color: #E5E7EB; 
         background: transparent;
-        font-family: 'Courier New', monospace;
+        font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
       }
       
       #left-controls { 
@@ -120,6 +117,43 @@
         border-radius: 3px;
         border: 1px solid #1FD9FE;
       }
+
+      .tuning-panel {
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid rgba(31, 217, 254, 0.4);
+        border-radius: 10px;
+        background: rgba(15, 22, 47, 0.6);
+        max-width: 560px;
+      }
+
+      .tuning-title {
+        font-size: 12px;
+        color: #7cf0ff;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+      }
+
+      .tuning-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0;
+        font-size: 12px;
+        color: #E5E7EB;
+      }
+
+      .tuning-row input[type="range"] {
+        flex: 1;
+        height: 22px;
+      }
+
+      .tuning-value {
+        width: 64px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: #7cf0ff;
+      }
     </style>
   </head>
   <body>
@@ -135,7 +169,7 @@
       </div>
     </div>
     
-    <div style="margin-top:12px; color:#E5E7EB; font-family: 'Courier New', monospace;">
+    <div style="margin-top:12px; color:#E5E7EB; font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;">
       Letters per asteroid: 
       <input id="char-slider" type="range" min="40" max="400" step="10" value="200" style="width:240px; vertical-align:middle;">
       <span id="char-value" style="display:inline-block; width:40px; text-align:right;">200</span>
@@ -148,7 +182,6 @@
         <kbd>↑</kbd> Thrust | 
         <kbd>SPACE</kbd> Fire | 
         <kbd>SHIFT</kbd> Teleport | 
-        <kbd>P</kbd> Pause | 
         <kbd>M</kbd> Mute |
         <kbd>F</kbd> FPS
       </p>
@@ -157,6 +190,20 @@
       <button id="toggle-fps" aria-pressed="false" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">FPS: OFF</button>
       <span id="fps-readout" style="margin-left:10px; padding:6px 10px; color:#7cf0ff; border:1px solid rgba(31,217,254,0.35); border-radius:6px; display:none;">FPS: --</span>
       <a href="/qr-demo.html" target="_blank" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; text-decoration:none; font-size:12px;">◫ QR DEMO CODES</a>
+    </div>
+
+    <div class="tuning-panel">
+      <div class="tuning-title">SHIP ROTATION (LIVE)</div>
+      <div class="tuning-row">
+        <span>Start Rot °</span>
+        <input id="ship-start-rot" type="range" min="0" max="360" step="0.1" value="0">
+        <span class="tuning-value" id="ship-start-rot-val">0.0</span>
+      </div>
+      <div class="tuning-row">
+        <span>Intro Rot °</span>
+        <input id="ship-intro-rot" type="range" min="0" max="360" step="0.1" value="0">
+        <span class="tuning-value" id="ship-intro-rot-val">0.0</span>
+      </div>
     </div>
 
     <script>
@@ -212,6 +259,49 @@
               alert('Start the game first! (Press SPACE to start, then click this button)');
             }
           });
+        }
+      })();
+
+      (function() {
+        var startRot = document.getElementById('ship-start-rot');
+        var introRot = document.getElementById('ship-intro-rot');
+        var startRotVal = document.getElementById('ship-start-rot-val');
+        var introRotVal = document.getElementById('ship-intro-rot-val');
+
+        function setDefaults() {
+          if (typeof window.SHIP_START_ROT_DEG === 'undefined') {
+            window.SHIP_START_ROT_DEG = 0;
+          }
+          if (typeof window.SHIP_INTRO_ROT_DEG === 'undefined') {
+            window.SHIP_INTRO_ROT_DEG = 0;
+          }
+          startRot.value = Number(window.SHIP_START_ROT_DEG).toFixed(1);
+          introRot.value = Number(window.SHIP_INTRO_ROT_DEG).toFixed(1);
+          startRotVal.textContent = Number(startRot.value).toFixed(1);
+          introRotVal.textContent = Number(introRot.value).toFixed(1);
+        }
+
+        function applyStartRotation() {
+          if (window.Game && Game.ship) {
+            Game.ship.rot = window.SHIP_START_ROT_DEG;
+          }
+        }
+
+        function bind() {
+          startRot.addEventListener('input', function() {
+            window.SHIP_START_ROT_DEG = parseFloat(startRot.value);
+            startRotVal.textContent = Number(startRot.value).toFixed(1);
+            applyStartRotation();
+          });
+          introRot.addEventListener('input', function() {
+            window.SHIP_INTRO_ROT_DEG = parseFloat(introRot.value);
+            introRotVal.textContent = Number(introRot.value).toFixed(1);
+          });
+        }
+
+        if (startRot && introRot) {
+          setDefaults();
+          bind();
         }
       })();
     </script>

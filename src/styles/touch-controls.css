@@ -1,0 +1,203 @@
+/**
+ * ==========================================================================
+ * TOUCH CONTROLS
+ * ==========================================================================
+ * 
+ * Mobile touch control interface including virtual joystick and fire button.
+ * Designed for tablet and mobile gameplay experiences.
+ * 
+ * @description Mobile/tablet touch input controls
+ * @author VAsteroids Team
+ * @version 1.0.0
+ * @requires tokens.css
+ * 
+ * COMPONENTS:
+ *   - #mobile-controls     : Container (hidden on desktop)
+ *   - #joystick-zone       : Left-side joystick area
+ *   - #joystick-base       : Joystick outer ring
+ *   - #joystick-thumb      : Draggable joystick knob
+ *   - #fire-button         : Right-side fire button
+ * 
+ * BEHAVIOR:
+ *   - Automatically hidden on devices with hover capability (desktop)
+ *   - Responsive sizing for smaller screens (< 480px)
+ *   - Touch selection and callout prevention
+ * 
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   CONTAINER
+   ========================================================================== */
+
+#mobile-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 20px 20px;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 100;
+  touch-action: none;
+}
+
+/* ==========================================================================
+   JOYSTICK (Left Side)
+   ========================================================================== */
+
+#joystick-zone {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#joystick-base {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(14, 20, 44, 0.7);
+  border: 2px solid var(--ui-border);
+  box-shadow: 
+    0 0 20px rgba(31, 217, 254, 0.3),
+    inset 0 0 30px rgba(31, 217, 254, 0.1);
+}
+
+#joystick-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #3ae8ff, #1fd9fe 50%, #0a8fa8);
+  border: 2px solid #7cf0ff;
+  box-shadow: 
+    0 0 15px rgba(31, 217, 254, 0.6),
+    0 0 30px rgba(31, 217, 254, 0.3);
+  transition: transform 0.05s ease-out;
+}
+
+/* ==========================================================================
+   FIRE BUTTON (Right Side)
+   ========================================================================== */
+
+#fire-button {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(217, 18, 71, 0.2);
+  border: 3px solid #D91247;
+  box-shadow: 
+    0 0 20px rgba(217, 18, 71, 0.4),
+    inset 0 0 20px rgba(217, 18, 71, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+#fire-button span {
+  color: #ff6b6b;
+  font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+}
+
+/* Active/Pressed State */
+#fire-button.active {
+  background: rgba(217, 18, 71, 0.5);
+  transform: scale(0.95);
+  box-shadow: 
+    0 0 30px rgba(217, 18, 71, 0.7),
+    inset 0 0 30px rgba(217, 18, 71, 0.4);
+}
+
+#fire-button.active span {
+  color: #fff;
+}
+
+/* ==========================================================================
+   RESPONSIVE: Hide on Desktop
+   ========================================================================== 
+   
+   Hide touch controls on devices that support hover (mouse/trackpad).
+   This ensures desktop users don't see unnecessary touch UI.
+*/
+
+@media (hover: hover) and (pointer: fine) {
+  #mobile-controls {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE: Small Screens (< 480px)
+   ========================================================================== */
+
+@media screen and (max-width: 480px) {
+  #mobile-controls {
+    height: 150px;
+    padding: 0 15px 15px 15px;
+  }
+  
+  #joystick-zone {
+    width: 120px;
+    height: 120px;
+  }
+  
+  #joystick-base {
+    width: 100px;
+    height: 100px;
+  }
+  
+  #joystick-thumb {
+    width: 40px;
+    height: 40px;
+  }
+  
+  #fire-button {
+    width: 80px;
+    height: 80px;
+  }
+  
+  #fire-button span {
+    font-size: 12px;
+  }
+}
+
+/* ==========================================================================
+   TOUCH BEHAVIOR
+   ========================================================================== 
+   
+   Prevent unwanted browser behaviors on touch:
+   - No text selection
+   - No callout menus (iOS)
+   - No zoom on double-tap
+*/
+
+#mobile-controls * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

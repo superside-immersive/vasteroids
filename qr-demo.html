@@ -4,9 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Demo QR Codes - VAST Asteroids</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
+    @font-face {
+      font-family: 'Audiowide';
+      src: url('assets/Audiowide-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Orbitron';
+      src: url('assets/Orbitron-VariableFont_wght.ttf') format('truetype-variations');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --ui-bg: rgba(14, 20, 44, 1);
       --ui-panel: rgba(18, 26, 54, 0.95);
@@ -22,7 +37,7 @@
     }
 
     body {
-      font-family: 'Orbitron', 'Courier New', monospace;
+      font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
       background: var(--ui-bg);
       color: var(--ui-text);
       margin: 0;

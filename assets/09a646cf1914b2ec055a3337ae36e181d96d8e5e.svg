@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 42.8008 69.3499" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 98">
+<g id="Polygon 2" filter="url(#filter0_f_2009_146)">
+<path d="M21.4004 4L38.8008 34.6749L21.4004 65.3499L4 34.6749L21.4004 4Z" fill="var(--fill-0, #FF4264)" fill-opacity="0.4"/>
+<path d="M35.9258 34.6748L21.4004 60.2822L6.87402 34.6748L21.4004 9.06641L35.9258 34.6748Z" stroke="var(--stroke-0, #FF4264)" stroke-width="5"/>
+</g>
+<path id="Polygon 3" d="M35.9258 34.6748L21.4004 60.2822L6.87402 34.6748L21.4004 9.06641L35.9258 34.6748Z" fill="var(--fill-0, #FF4264)" fill-opacity="0.4" stroke="var(--stroke-0, #FF4264)" stroke-width="5"/>
+<line id="Line 65" x1="21.7207" y1="5.79386" x2="21.7207" y2="63.556" stroke="var(--stroke-0, #FF4264)"/>
+<line id="Line 66" x1="5.4346" y1="34.3543" x2="37.724" y2="34.3543" stroke="var(--stroke-0, #FF4264)"/>
+</g>
+<defs>
+<filter id="filter0_f_2009_146" x="0" y="-8.9407e-08" width="42.8008" height="69.3499" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2" result="effect1_foregroundBlur_2009_146"/>
+</filter>
+</defs>
+</svg>

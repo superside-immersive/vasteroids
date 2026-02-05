@@ -80,7 +80,7 @@ var GameOverUI = (function() {
     parseEmail: function(data) { return { format: 'Email', raw: data, email: data, firstName: null, lastName: null, company: null, referenceId: null }; },
     parseReferenceId: function(data) { return { format: 'Reference ID', raw: data, firstName: null, lastName: null, email: null, company: null, referenceId: data }; },
     getDisplayName: function(parsedData, maxLen) {
-      maxLen = maxLen || 8;
+      maxLen = maxLen || 10;
       var name = null;
       if (parsedData.firstName && parsedData.lastName) {
         name = parsedData.firstName.toUpperCase();
@@ -171,7 +171,7 @@ var GameOverUI = (function() {
 
     input = document.createElement('input');
     input.className = 'input-name';
-    input.maxLength = 8;
+    input.maxLength = 10;
     input.placeholder = 'YOUR NAME';
 
     inputSection.appendChild(inputLabel);
@@ -317,13 +317,17 @@ var GameOverUI = (function() {
     // Build rows data array for sequential animation
     var rows = [];
     
-    // Total score with position (combined row)
+    function badgeIconHtml(icon) {
+      if (!icon) return '';
+      if (icon.indexOf('.png') === -1) return icon;
+      return '<img class="breakdown-badge-icon" src="' + icon + '" alt="Achievement" />';
+    }
+    
+    // Total score (simple, no rank badge inside)
     rows.push({
       type: 'total',
       label: 'TOTAL SCORE',
-      value: formatNumber(totalScore),
-      extra: '#' + position,
-      rankClass: position <= 3 ? 'rank-' + position : 'rank-other'
+      value: formatNumber(totalScore)
     });
     
     // Waves completed
@@ -333,34 +337,12 @@ var GameOverUI = (function() {
       value: stats.wavesCompleted || 0
     });
     
-    // Asteroids destroyed
-    if (stats.asteroidsDestroyed) {
-      rows.push({
-        type: 'score',
-        label: 'ASTEROIDS',
-        count: stats.asteroidsDestroyed,
-        value: '+' + formatNumber(stats.asteroidsScore || 0)
-      });
-    }
-    
-    // Silos destroyed
-    if (stats.silosDestroyed) {
-      rows.push({
-        type: 'score',
-        label: 'DRONES',
-        count: stats.silosDestroyed,
-        value: '+' + formatNumber(stats.silosScore || 0)
-      });
-    }
-    
-    // Similarity bonus
-    if (stats.similarityBonus) {
-      rows.push({
-        type: 'bonus',
-        label: 'SIMILARITY',
-        value: '+' + formatNumber(stats.similarityBonus)
-      });
-    }
+    // Asteroids destroyed (just count, no score)
+    rows.push({
+      type: 'stat',
+      label: 'ASTEROIDS',
+      value: stats.asteroidsDestroyed || 0
+    });
     
     // Fragments collected
     rows.push({
@@ -368,22 +350,15 @@ var GameOverUI = (function() {
       label: 'FRAGMENTS',
       value: stats.fragmentsCollected || 0
     });
-    
-    // DASE activations
-    if (stats.daseActivations) {
+
+    // Achievement badge (icon + name on its own row)
+    if (stats.fragmentAchievementIcon || stats.fragmentAchievementName) {
+      var badgeName = stats.fragmentAchievementName || 'ACHIEVEMENT';
+      var badgeIcon = stats.fragmentAchievementIcon || '';
       rows.push({
-        type: 'stat',
-        label: 'DASE',
-        value: stats.daseActivations
-      });
-    }
-    
-    // Hyperspace used
-    if (stats.hyperspaceUsed) {
-      rows.push({
-        type: 'stat',
-        label: 'HYPERSPACE',
-        value: stats.hyperspaceUsed
+        type: 'badge',
+        icon: badgeIcon,
+        name: badgeName
       });
     }
     
@@ -397,19 +372,14 @@ var GameOverUI = (function() {
       
       if (row.type === 'total') {
         div.innerHTML = 
-          '<div class="breakdown-main">' +
-            '<span class="breakdown-label">' + row.label + '</span>' +
-            '<span class="breakdown-value breakdown-value--total"><span class="value-counter" data-target="' + totalScore + '">0</span></span>' +
-          '</div>' +
-          '<div class="breakdown-rank ' + row.rankClass + '">' + row.extra + '</div>';
-      } else if (row.type === 'score') {
-        div.innerHTML = 
-          '<span class="breakdown-label">' + row.label + ' <span class="breakdown-count">×' + row.count + '</span></span>' +
-          '<span class="breakdown-value breakdown-value--score">' + row.value + '</span>';
-      } else if (row.type === 'bonus') {
-        div.innerHTML = 
           '<span class="breakdown-label">' + row.label + '</span>' +
-          '<span class="breakdown-value breakdown-value--bonus">' + row.value + '</span>';
+          '<span class="breakdown-value breakdown-value--total"><span class="value-counter" data-target="' + totalScore + '">0</span></span>';
+      } else if (row.type === 'badge') {
+        div.innerHTML = 
+          '<span class="breakdown-badge-row">' +
+            (row.icon ? '<img class="breakdown-badge-icon" src="' + row.icon + '" alt="Badge" />' : '') +
+            '<span class="breakdown-badge-name">' + row.name + '</span>' +
+          '</span>';
       } else {
         div.innerHTML = 
           '<span class="breakdown-label">' + row.label + '</span>' +
@@ -547,7 +517,7 @@ var GameOverUI = (function() {
     isScanning = false;
 
     var parsed = QRParser.parse(decodedText);
-    var displayName = QRParser.getDisplayName(parsed, 8);
+    var displayName = QRParser.getDisplayName(parsed, 10);
 
     input.value = displayName;
     qrStatus.textContent = '✓ DETECTED';
@@ -704,7 +674,7 @@ var GameOverUI = (function() {
     // persist enough info to resume the post-game scoreboard reveal on next load.
     try {
       sessionStorage.setItem('vasteroids.pendingReveal', JSON.stringify({
-        name: name.substring(0, 8),
+        name: name.substring(0, 10),
         score: scoreValue,
         at: Date.now()
       }));
@@ -759,7 +729,13 @@ var GameOverUI = (function() {
 
     // Submit score (async, handles server + fallback). Wrap to catch sync failures too.
     Promise.resolve().then(function() {
-      return Scoreboard.addEntry(name.substring(0, 8), scoreValue);
+      var achievementIcon = null;
+      if (window.Game && Game.stats && Game.stats.fragmentAchievementIcon) {
+        achievementIcon = Game.stats.fragmentAchievementIcon;
+      }
+      return Scoreboard.addEntry(name.substring(0, 10), scoreValue, {
+        achievementIcon: achievementIcon
+      });
     }).then(function(result) {
       console.log('[GameOver] Score submitted:', result);
 

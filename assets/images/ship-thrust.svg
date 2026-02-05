@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="xMidYMid meet" width="138" height="158" overflow="visible" style="display: block;" viewBox="0 0 138 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Ship thrust glow only - extracted from vast-logo-full.svg -->
+<defs>
+<filter id="thrustBlur" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur"/>
+</filter>
+</defs>
+<g id="Thrust" filter="url(#thrustBlur)">
+<path d="M50 91.1116L53.5247 50L87.9643 107.276L50 91.1116Z" fill="#29B8FF"/>
+</g>
+</svg>

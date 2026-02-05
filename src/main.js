@@ -196,8 +196,9 @@ $(function () {
 
   // Create ship
   var ship = new Ship();
-  ship.x = Game.canvasWidth / 2;
-  ship.y = Game.canvasHeight / 2;
+  // Start ship where VAST logo ship icon is (below center, left portion)
+  ship.x = Game.canvasWidth * 0.5;
+  ship.y = Game.canvasHeight * 0.66;
   Game.sprites.push(ship);
 
   // Create bullets
@@ -576,6 +577,7 @@ $(function () {
     HUD.updateWave(Game.currentWave || 1);
     HUD.updateHyperspace(Game.hyperspaceJumps);
     HUD.updateDASEMeter();
+    HUD.updateAchievementBadge();
     HUD.updateCombo();
   }
 
@@ -585,13 +587,6 @@ $(function () {
   // Keyboard controls
   $(window).keydown(function (e) {
     switch (KEY_CODES[e.keyCode]) {
-      case 'p':
-        paused = !paused;
-        if (!paused) {
-          lastFrame = Date.now();
-          mainLoop();
-        }
-        break;
       case 'm':
         SFX.muted = !SFX.muted;
         break;

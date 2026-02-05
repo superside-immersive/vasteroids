@@ -1,0 +1,335 @@
+/**
+ * ==========================================================================
+ * SCOREBOARD
+ * ==========================================================================
+ * 
+ * Leaderboard display with retro TV aesthetic effects.
+ * Used for both in-game scoreboard and standalone scoreboard pages.
+ * 
+ * @description Scoreboard panel and table styles
+ * @author VAsteroids Team
+ * @version 1.0.0
+ * @requires tokens.css, animations.css
+ * 
+ * COMPONENTS:
+ *   - .scoreboard-shell     : Outer panel wrapper
+ *   - .scoreboard-panel     : Main scoreboard container
+ *   - .scoreboard-title     : Panel heading
+ *   - .scoreboard-table     : Score listing table
+ *   - .scoreboard-badge-icon: Player badge icons
+ * 
+ *   RETRO TV EFFECTS:
+ *     - ::before pseudo      : Scanline overlay
+ *     - ::after pseudo       : Noise grain effect
+ *     - .retro-tracking-bar  : VHS tracking bar
+ *     - .text-glow (in panel): RGB chromatic shift
+ * 
+ *   INTERACTIVE:
+ *     - .prompt-pill         : CTA pill button
+ *     - .scoreboard-cta      : Action button
+ *     - .input-name          : Name entry field
+ * 
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   SCOREBOARD SHELL
+   ========================================================================== 
+   
+   Outer wrapper that extends .ui-panel with scoreboard-specific styles
+*/
+
+.scoreboard-shell.ui-panel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-width: 400px;
+  max-width: 400px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==========================================================================
+   SCOREBOARD PANEL
+   ========================================================================== */
+
+.scoreboard-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 16px 14px;
+  border-radius: 14px;
+  border: 2px solid rgba(31, 217, 254, 0.85);
+  background: linear-gradient(180deg, rgba(28, 42, 88, 0.55) 0%, rgba(20, 30, 68, 0.55) 100%);
+  box-shadow:
+    0 0 0 1px rgba(31, 217, 254, 0.18),
+    0 0 22px rgba(31, 217, 254, 0.15),
+    inset 0 0 50px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   RETRO TV EFFECTS
+   ========================================================================== 
+   
+   CRT monitor simulation with scanlines, noise, and tracking artifacts.
+   Disabled by default for performance (.hidden !important on pseudos).
+   Enable by removing the display:none override.
+   
+   Note: These effects are automatically disabled in Safari performance mode.
+*/
+
+/* Hide effects by default for performance */
+.scoreboard-panel::before,
+.scoreboard-panel::after,
+.retro-tracking-bar {
+  display: none !important;
+}
+
+/* Scanline Overlay */
+.scoreboard-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  animation: scanlineFlicker 0.1s infinite;
+}
+
+/* Noise Grain Overlay */
+.scoreboard-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 101;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  animation: noiseAnimation 0.15s infinite steps(5);
+}
+
+/* VHS Tracking Bar */
+.retro-tracking-bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 99;
+  animation: trackingBarMove 4s linear infinite;
+}
+
+/* RGB Chromatic Aberration on Text */
+.scoreboard-panel .text-glow {
+  position: relative;
+  animation: rgbShift 3s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   SCOREBOARD TITLE
+   ========================================================================== */
+
+.scoreboard-title {
+  font-size: 24px;
+  letter-spacing: 4px;
+  text-align: center;
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   SCOREBOARD TABLE
+   ========================================================================== */
+
+.scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 18px;
+  color: #48d6ff;
+  table-layout: fixed;
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scoreboard-table th {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+  font-size: 12px;
+  color: rgba(31, 217, 254, 0.75);
+}
+
+/* Column: Rank */
+.scoreboard-table th.col-rank,
+.scoreboard-table td:nth-child(1) {
+  width: 30px;
+  text-align: left;
+  padding-left: 8px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Column: Badge */
+.scoreboard-table th.col-badge,
+.scoreboard-table td:nth-child(2) {
+  width: 38px;
+  text-align: center;
+}
+
+/* Column: Name */
+.scoreboard-table th.col-name,
+.scoreboard-table td:nth-child(3) {
+  text-align: left;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Column: Score */
+.scoreboard-table th.col-score,
+.scoreboard-table td:nth-child(4) {
+  width: 100px;
+  text-align: right;
+  padding-right: 6px;
+  color: rgba(31, 217, 254, 0.95);
+}
+
+/* --------------------------------------------------------------------------
+   HIGHLIGHT ROW
+   -------------------------------------------------------------------------- 
+   
+   Applied to the current player's row in the scoreboard
+*/
+
+.scoreboard-table tr.highlight td {
+  color: rgba(8, 18, 35, 0.95);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.scoreboard-table tr.highlight {
+  animation: none;
+}
+
+.scoreboard-table tr.highlight td {
+  background: rgba(31, 217, 254, 0.95);
+}
+
+.scoreboard-table tr.highlight td:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.scoreboard-table tr.highlight td:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* ==========================================================================
+   BADGE ICONS
+   ========================================================================== */
+
+.scoreboard-badge-icon {
+  width: 26px;
+  height: 26px;
+  vertical-align: middle;
+  margin-left: 0;
+  filter: drop-shadow(0 0 6px rgba(124, 240, 255, 0.45));
+}
+
+/* ==========================================================================
+   SCROLL INDICATOR
+   ========================================================================== 
+   
+   Visual indicator showing more content is available
+*/
+
+.scoreboard-scroll-indicator {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 6px;
+}
+
+.scoreboard-scroll-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(31, 217, 254, 0.85);
+  box-shadow: 0 0 12px rgba(31, 217, 254, 0.5);
+}
+
+/* ==========================================================================
+   INTERACTIVE ELEMENTS
+   ========================================================================== */
+
+/* Name Input Field */
+.input-name {
+  width: 80%;
+  padding: 10px 12px;
+  background: #0f162f;
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 6px;
+  outline: none;
+  box-shadow: var(--ui-glow);
+  font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
+}
+
+.input-name.flash {
+  animation: inputFlash 0.5s ease-out;
+}
+
+/* Prompt Pill Button */
+.prompt-pill {
+  display: inline-block;
+  width: auto;
+  text-align: center;
+  margin-top: 14px;
+  padding: 10px 24px;
+  border: 2px solid rgba(31, 217, 254, 0.85);
+  border-radius: 10px;
+  color: rgba(124, 240, 255, 0.95);
+  background: transparent;
+  box-shadow: 0 0 12px rgba(31, 217, 254, 0.15);
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+/* CTA Button */
+.scoreboard-cta {
+  margin-top: 14px;
+  padding: 10px 24px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow:
+    0 0 0 1px rgba(31, 217, 254, 0.15),
+    0 0 12px rgba(31, 217, 254, 0.15);
+  width: auto;
+}

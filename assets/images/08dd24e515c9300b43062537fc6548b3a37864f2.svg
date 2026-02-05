@@ -1,0 +1,27 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 61.7 110.644" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="V_Letter">
+<path id="V_Letter_Outline" d="M27 103C28.7333 104 30.7333 103.833 33 102.5L37.3 100C38.8333 99.1333 40.2667 97.8667 41.6 96.2C42.9333 94.4667 44 92.6 44.8 90.6C45.6 88.6 46 86.7333 46 85M27 103C25.2667 102 24.4 100.167 24.4 97.5M27 103L18.3 98M24.4 97.5L46 85M24.4 97.5C22.0667 98.8333 20.0333 99 18.3 98M24.4 97.5V29.5M24.4 97.5L15.7 92.5M46 85V17M46 85C47.5333 84.1333 48.9333 82.8667 50.2 81.2C51.5333 79.4667 52.6 77.6 53.4 75.6C54.2667 73.6 54.7 71.7333 54.7 70V12M46 85L37.3 80M46 17L54.7 12M46 17L37.3 12M54.7 12L46 7L37.3 12M18.3 98C16.5667 97 15.7 95.1667 15.7 92.5M18.3 98L9.6 93C7.86667 92 7 90.1667 7 87.5V29.5M15.7 92.5V34.5M15.7 92.5L37.3 80M15.7 34.5L24.4 29.5M15.7 34.5L7 29.5M24.4 29.5L15.7 24.5L7 29.5M37.3 12V80" stroke="var(--stroke-0, #29B8FF)" stroke-linejoin="round"/>
+<g id="V_Letter_Blur" filter="url(#filter0_f_282_3)">
+<path d="M27 103C28.7333 104 30.7333 103.833 33 102.5L37.3 100C38.8333 99.1333 40.2667 97.8667 41.6 96.2C42.9333 94.4667 44 92.6 44.8 90.6C45.6 88.6 46 86.7333 46 85M27 103C25.2667 102 24.4 100.167 24.4 97.5M27 103L18.3 98M24.4 97.5L46 85M24.4 97.5C22.0667 98.8333 20.0333 99 18.3 98M24.4 97.5V29.5M24.4 97.5L15.7 92.5M46 85V17M46 85C47.5333 84.1333 48.9333 82.8667 50.2 81.2C51.5333 79.4667 52.6 77.6 53.4 75.6C54.2667 73.6 54.7 71.7333 54.7 70V12M46 85L37.3 80M46 17L54.7 12M46 17L37.3 12M54.7 12L46 7L37.3 12M18.3 98C16.5667 97 15.7 95.1667 15.7 92.5M18.3 98L9.6 93C7.86667 92 7 90.1667 7 87.5V29.5M15.7 92.5V34.5M15.7 92.5L37.3 80M15.7 34.5L24.4 29.5M15.7 34.5L7 29.5M24.4 29.5L15.7 24.5L7 29.5M37.3 12V80" stroke="var(--stroke-0, #29B8FF)" stroke-width="2" stroke-linejoin="round"/>
+</g>
+<g id="V_Letter_Texture" filter="url(#filter1_g_282_3)">
+<path d="M55.7002 70C55.7002 71.9005 55.2249 73.9038 54.3174 75.998C53.4847 78.0726 52.3759 80.0078 50.9951 81.8037L50.9961 81.8047C49.7952 83.3848 48.4597 84.6482 46.9854 85.5742C46.9067 87.2904 46.4804 89.0921 45.7285 90.9717C44.8939 93.0582 43.781 95.0046 42.3926 96.8096C42.3887 96.8146 42.3848 96.8202 42.3809 96.8252C40.9873 98.5671 39.4628 99.9223 37.8018 100.863L37.8027 100.864L33.5059 103.361L33.5068 103.362C31.0419 104.812 28.6434 105.103 26.5 103.866C26.498 103.865 26.4962 103.863 26.4941 103.862L17.8018 98.8672L9.10156 93.8672L9.10059 93.8662C6.95602 92.629 6 90.3887 6 87.5V29.5C6 29.142 6.19159 28.8112 6.50195 28.6328L15.2021 23.6328L15.3203 23.5752C15.6039 23.4587 15.9282 23.4777 16.1982 23.6328L24.8984 28.6328C25.2088 28.8112 25.4004 29.142 25.4004 29.5V85.7305L36.2998 79.4229V12C36.2998 11.642 36.4914 11.3112 36.8018 11.1328L45.502 6.13281L45.6201 6.0752C45.9037 5.95867 46.228 5.97772 46.498 6.13281L55.1982 11.1328C55.5086 11.3112 55.7002 11.642 55.7002 12V70Z" stroke="var(--stroke-0, #29B8FF)" stroke-width="2" stroke-linejoin="round"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_282_3" x="2" y="2" width="57.7" height="106.643" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2" result="effect1_foregroundBlur_282_3"/>
+</filter>
+<filter id="filter1_g_282_3" x="0" y="0" width="61.7" height="110.644" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="10 10" numOctaves="3" seed="3429" />
+<feDisplacementMap in="shape" scale="10" xChannelSelector="R" yChannelSelector="G" result="displacedImage" width="100%" height="100%" />
+<feMerge result="effect1_texture_282_3">
+<feMergeNode in="displacedImage"/>
+</feMerge>
+</filter>
+</defs>
+</svg>

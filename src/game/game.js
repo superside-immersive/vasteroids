@@ -15,6 +15,9 @@ var Game = {
     asteroidsDestroyed: 0,
     asteroidsScore: 0,
     fragmentsCollected: 0,
+    fragmentAchievementTier: 0,
+    fragmentAchievementIcon: null,
+    fragmentAchievementName: null,
     silosDestroyed: 0,
     silosScore: 0,
     daseActivations: 0,
@@ -54,11 +57,13 @@ var Game = {
 
     // Ensure ship resets to the default starting position for a new game
     if (this.ship) {
-      this.ship.x = this.canvasWidth / 2;
-      this.ship.y = this.canvasHeight / 2;
+      // Start ship where VAST logo ship icon is (below center, left portion)
+      var startRot = (typeof window.SHIP_START_ROT_DEG !== 'undefined') ? window.SHIP_START_ROT_DEG : 0;
+      this.ship.x = this.canvasWidth * 0.5;
+      this.ship.y = this.canvasHeight * 0.66;
       this.ship.vel.x = 0;
       this.ship.vel.y = 0;
-      this.ship.rot = 0;
+      this.ship.rot = startRot; // Match VAST logo orientation
     }
     
     // Reset stats for new game
@@ -66,6 +71,9 @@ var Game = {
       asteroidsDestroyed: 0,
       asteroidsScore: 0,
       fragmentsCollected: 0,
+      fragmentAchievementTier: 0,
+      fragmentAchievementIcon: null,
+      fragmentAchievementName: null,
       silosDestroyed: 0,
       silosScore: 0,
       daseActivations: 0,

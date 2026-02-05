@@ -3,15 +3,19 @@
  * Rare power-up that activates pattern recognition mode
  */
 
+// Preload similarity orb sprite
+var SIMILARITY_ORB_IMG = new Image();
+SIMILARITY_ORB_IMG.src = 'assets/images/similarity-orb.svg';
+
 var SimilarityPickup = function() {
-  // Hexagon shape
+  // Collision area
   this.init("similaritypickup", [
-    0, -12,
-    10, -6,
-    10, 6,
-    0, 12,
-    -10, 6,
-    -10, -6
+    0, -18,
+    16, -9,
+    16, 9,
+    0, 18,
+    -16, 9,
+    -16, -9
   ]);
   
   this.visible = true;
@@ -21,7 +25,7 @@ var SimilarityPickup = function() {
   
   // Visual properties
   this.pulseTime = 0;
-  this.colorCycle = 0;
+  this.rotationAngle = 0;
   
   // Lifetime (15 seconds)
   this.lifetime = 900;
@@ -36,7 +40,7 @@ var SimilarityPickup = function() {
    */
   this.preMove = function(delta) {
     this.pulseTime += delta * 0.08;
-    this.colorCycle += delta * 0.05;
+    this.rotationAngle += delta * 0.02;
     this.age += delta;
     
     if (this.age > this.lifetime) {
@@ -45,31 +49,24 @@ var SimilarityPickup = function() {
   };
   
   /**
-   * Draw the multi-colored pickup
+   * Draw the similarity orb using sprite image
    */
   this.draw = function() {
     if (!this.visible) return;
     
     var ctx = this.context;
-    var pulse = Math.sin(this.pulseTime) * 0.2 + 1;
+    var pulse = Math.sin(this.pulseTime) * 0.15 + 1;
     var fadeAlpha = this.age > this.lifetime * 0.7
       ? 1 - ((this.age - this.lifetime * 0.7) / (this.lifetime * 0.3))
       : 1;
     
-    // Cycling colors (cyan, magenta, yellow)
-    var colors = ['#00FFFF', '#FF00FF', '#FFFF00'];
-    var colorIndex = Math.floor(this.colorCycle) % 3;
-    var currentColor = colors[colorIndex];
-    var nextColor = colors[(colorIndex + 1) % 3];
-    var blend = this.colorCycle % 1;
+    var size = 40 * pulse;
     
     ctx.save();
-    ctx.scale(pulse, pulse);
-    
-    // Outer glow with current color
-    ctx.shadowColor = currentColor;
-    ctx.shadowBlur = 20;
-    
+    ctx.globalAlpha = fadeAlpha;
+    ctx.rotate(this.rotationAngle);
+
+    // Maintain collision path for isPointInPath checks
     ctx.beginPath();
     ctx.moveTo(this.points[0], this.points[1]);
     for (var i = 2; i < this.points.length; i += 2) {
@@ -77,27 +74,22 @@ var SimilarityPickup = function() {
     }
     ctx.closePath();
     
-    ctx.strokeStyle = currentColor;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = fadeAlpha;
-    ctx.stroke();
-    
-    // Inner pattern - three overlapping triangles
-    ctx.globalAlpha = fadeAlpha * 0.4;
-    for (var c = 0; c < 3; c++) {
-      ctx.fillStyle = colors[c];
-      ctx.beginPath();
-      var offset = (c / 3) * Math.PI * 2 + this.colorCycle * 0.5;
-      for (var i = 0; i < 3; i++) {
-        var angle = offset + (i / 3) * Math.PI * 2;
-        var r = 6;
-        var px = Math.cos(angle) * r;
-        var py = Math.sin(angle) * r;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+    // Draw the sprite centered
+    if (SIMILARITY_ORB_IMG.complete && SIMILARITY_ORB_IMG.naturalWidth > 0) {
+      ctx.drawImage(SIMILARITY_ORB_IMG, -size/2, -size/2, size, size);
+    } else {
+      // Fallback: colored circles if image not loaded
+      var colors = ['#FF3B30', '#FFD60A', '#34C759', '#0A84FF'];
+      for (var i = 0; i < 4; i++) {
+        ctx.fillStyle = colors[i];
+        ctx.globalAlpha = fadeAlpha * 0.5;
+        var angle = (i / 4) * Math.PI * 2 + this.rotationAngle;
+        var cx = Math.cos(angle) * 6;
+        var cy = Math.sin(angle) * 6;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.closePath();
-      ctx.fill();
     }
     
     ctx.restore();

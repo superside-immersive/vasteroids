@@ -1,0 +1,356 @@
+/**
+ * ==========================================================================
+ * ANIMATIONS
+ * ==========================================================================
+ * 
+ * Centralized keyframe animations used across the UI.
+ * Import this file after tokens.css for any component that needs animations.
+ * 
+ * @description Shared @keyframes definitions for UI effects
+ * @author VAsteroids Team
+ * @version 1.0.0
+ * 
+ * ANIMATIONS INDEX:
+ * 
+ *   RETRO TV EFFECTS:
+ *     - scanlineFlicker    : CRT scanline opacity flicker
+ *     - noiseAnimation     : Static noise grain movement
+ *     - trackingBarMove    : VHS tracking bar sweep
+ *     - rgbShift           : Chromatic aberration on text
+ * 
+ *   UI FEEDBACK:
+ *     - highlightPulse     : Highlight row pulsing background
+ *     - inputFlash         : Input field flash on autofill
+ * 
+ *   QR SCANNER:
+ *     - qrScanLine         : Full-size scanner line sweep
+ *     - qrScanLineInline   : Compact scanner line sweep
+ * 
+ *   DASE METER:
+ *     - fragmentPop        : Fragment collection pop effect
+ *     - readyPulse         : Ready state pulsing glow
+ *     - textGlow           : Text glow alternation
+ *     - iconGlow           : Icon glow alternation
+ *     - dasePulse          : General meter pulse
+ * 
+ *   COMBO SYSTEM:
+ *     - comboShake         : Urgency shake effect
+ *     - pipPop             : Pip activation pop
+ * 
+ *   SCORE BREAKDOWN:
+ *     - rowReveal          : Row fade-in with blur
+ *     - rowGlowFlash       : Horizontal glow sweep
+ *     - scoreCountGlow     : Score counter flash
+ *     - scoreGlow          : Continuous score glow
+ *     - highScoreGlow      : High score celebration
+ * 
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   RETRO TV EFFECTS
+   ========================================================================== */
+
+/**
+ * Scanline Flicker
+ * Subtle opacity variation for CRT scanline effect
+ * Duration: 0.1s | Timing: infinite
+ */
+@keyframes scanlineFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.97; }
+}
+
+/**
+ * Noise Animation
+ * Random movement for static grain overlay
+ * Duration: 0.15s | Timing: infinite steps(5)
+ */
+@keyframes noiseAnimation {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2%, -2%); }
+  40% { transform: translate(2%, 1%); }
+  60% { transform: translate(-1%, 2%); }
+  80% { transform: translate(1%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/**
+ * Tracking Bar Move
+ * VHS-style tracking bar sweep from top to bottom
+ * Duration: 4s | Timing: linear infinite
+ */
+@keyframes trackingBarMove {
+  0% { top: -30px; }
+  100% { top: calc(100% + 30px); }
+}
+
+/**
+ * RGB Shift (Chromatic Aberration)
+ * Subtle red/cyan text shadow shift for retro CRT look
+ * Duration: 3s | Timing: ease-in-out infinite
+ */
+@keyframes rgbShift {
+  0%, 100% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      -1px 0 rgba(255, 0, 0, 0.3),
+      1px 0 rgba(0, 255, 255, 0.3);
+  }
+  25% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      -1px 0 rgba(255, 0, 0, 0.4),
+      1px 0 rgba(0, 255, 255, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      0px 0 rgba(255, 0, 0, 0.2),
+      0px 0 rgba(0, 255, 255, 0.2);
+  }
+  75% {
+    text-shadow: 
+      0 0 12px rgba(124, 240, 255, 0.5),
+      1px 0 rgba(255, 0, 0, 0.2),
+      -1px 0 rgba(0, 255, 255, 0.4);
+  }
+}
+
+/* ==========================================================================
+   UI FEEDBACK
+   ========================================================================== */
+
+/**
+ * Highlight Pulse
+ * Background color pulse for highlighted rows
+ * Duration: variable | Timing: infinite
+ */
+@keyframes highlightPulse {
+  0%, 100% { background: rgba(31, 217, 254, 0.15); }
+  50% { background: rgba(31, 217, 254, 0.3); }
+}
+
+/**
+ * Input Flash
+ * Flash effect when input is auto-filled (e.g., from QR scan)
+ * Duration: 0.5s | Timing: ease-out
+ */
+@keyframes inputFlash {
+  0% {
+    background: rgba(31, 217, 254, 0.4);
+    box-shadow: 0 0 20px rgba(31, 217, 254, 0.6);
+  }
+  100% {
+    background: #0f162f;
+    box-shadow: var(--ui-glow);
+  }
+}
+
+/* ==========================================================================
+   QR SCANNER
+   ========================================================================== */
+
+/**
+ * QR Scan Line
+ * Vertical sweep for full-size QR scanner overlay
+ * Duration: 2s | Timing: ease-in-out infinite
+ */
+@keyframes qrScanLine {
+  0%, 100% {
+    top: 10px;
+    opacity: 0.6;
+  }
+  50% {
+    top: calc(100% - 13px);
+    opacity: 1;
+  }
+}
+
+/**
+ * QR Scan Line Inline
+ * Vertical sweep for compact inline QR scanner
+ * Duration: 1.8s | Timing: ease-in-out infinite
+ */
+@keyframes qrScanLineInline {
+  0%, 100% {
+    top: 8px;
+    opacity: 0.5;
+  }
+  50% {
+    top: calc(100% - 10px);
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   DASE METER
+   ========================================================================== */
+
+/**
+ * Fragment Pop
+ * Scale + color burst when collecting a fragment
+ * Duration: 0.4s | Timing: ease-out
+ */
+@keyframes fragmentPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.6); color: #FFBC42; text-shadow: 0 0 20px #FFBC42; }
+  100% { transform: scale(1); }
+}
+
+/**
+ * Ready Pulse
+ * Pulsing glow when DASE meter is full and ready
+ * Duration: 0.8s | Timing: ease-in-out infinite
+ */
+@keyframes readyPulse {
+  0%, 100% { 
+    box-shadow: 0 0 30px rgba(6, 214, 159, 0.4);
+    transform: translateX(-50%) scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 50px rgba(6, 214, 159, 0.6);
+    transform: translateX(-50%) scale(1.02);
+  }
+}
+
+/**
+ * Text Glow
+ * Alternating text glow intensity
+ * Duration: 0.5s | Timing: ease-in-out infinite alternate
+ */
+@keyframes textGlow {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; text-shadow: 0 0 25px rgba(6, 214, 159, 1); }
+}
+
+/**
+ * Icon Glow
+ * Alternating icon glow intensity
+ * Duration: 0.6s | Timing: ease-in-out infinite alternate
+ */
+@keyframes iconGlow {
+  0% { text-shadow: 0 0 8px rgba(6, 214, 159, 0.6); }
+  100% { text-shadow: 0 0 16px rgba(6, 214, 159, 1); }
+}
+
+/**
+ * DASE Pulse
+ * General opacity pulse for meter elements
+ * Duration: variable | Timing: infinite
+ */
+@keyframes dasePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ==========================================================================
+   COMBO SYSTEM
+   ========================================================================== */
+
+/**
+ * Combo Shake
+ * Urgency shake when combo timer is running low
+ * Duration: 0.15s | Timing: ease infinite
+ */
+@keyframes comboShake {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-50%) rotate(-2deg); }
+  75% { transform: translateX(-50%) rotate(2deg); }
+}
+
+/**
+ * Pip Pop
+ * Scale pop when a combo pip is activated
+ * Duration: 0.2s | Timing: ease-out
+ */
+@keyframes pipPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   SCORE BREAKDOWN
+   ========================================================================== */
+
+/**
+ * Row Reveal
+ * Staggered row entrance with blur and scale
+ * Duration: 0.5s | Timing: cubic-bezier(0.34, 1.56, 0.64, 1) forwards
+ */
+@keyframes rowReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.95);
+    filter: blur(4px);
+  }
+  50% {
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+/**
+ * Row Glow Flash
+ * Horizontal glow sweep on row reveal
+ * Duration: 0.6s | Timing: ease-out forwards
+ */
+@keyframes rowGlowFlash {
+  0% {
+    opacity: 1;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+/**
+ * Score Count Glow
+ * Initial flash when score counter appears
+ * Duration: 0.6s | Timing: ease-out
+ */
+@keyframes scoreCountGlow {
+  0% { 
+    color: #fff;
+    text-shadow: 0 0 30px #fff, 0 0 60px #1FD9FE;
+  }
+  100% { 
+    color: #1FD9FE;
+    text-shadow: 0 0 15px rgba(31, 217, 254, 0.5);
+  }
+}
+
+/**
+ * Score Glow
+ * Continuous subtle glow for score display
+ * Duration: 2s | Timing: ease-in-out infinite (starts after 0.6s delay)
+ */
+@keyframes scoreGlow {
+  0%, 100% { text-shadow: 0 0 15px rgba(31, 217, 254, 0.5); }
+  50% { text-shadow: 0 0 25px rgba(31, 217, 254, 0.8), 0 0 35px rgba(31, 217, 254, 0.4); }
+}
+
+/**
+ * High Score Glow
+ * Celebration glow for new high scores
+ * Duration: 1s | Timing: ease-in-out infinite
+ */
+@keyframes highScoreGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px #FFBC42, 0 0 20px #FFBC42, 0 0 30px #FFBC42;
+  }
+  50% {
+    text-shadow: 0 0 20px #FFBC42, 0 0 40px #FFBC42, 0 0 60px #FFBC42;
+  }
+}

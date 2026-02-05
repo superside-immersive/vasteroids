@@ -144,7 +144,6 @@ You can override the scoreboard server URL any time via:
 | ← → | Rotate ship |
 | ↑ | Thrust |
 | SPACE | Fire |
-| P | Pause |
 | M | Mute audio |
 | F | Show FPS |
 | G | Debug grid (collision cells) |

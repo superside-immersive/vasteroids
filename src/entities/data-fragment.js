@@ -3,6 +3,10 @@
  * Collectible orbs dropped by destroyed asteroids that fill the DASE meter
  */
 
+// Preload data fragment sprite
+var DATA_FRAGMENT_IMG = new Image();
+DATA_FRAGMENT_IMG.src = 'assets/images/data-fragment.svg';
+
 var DataFragment = function() {
   // Larger collision area for easier pickup
   this.init("datafragment", [-15, -15, 15, -15, 15, 15, -15, 15]);
@@ -12,9 +16,9 @@ var DataFragment = function() {
   this.postMove = this.wrapPostMove;
   this.collidesWith = ["ship"];
   
-  // Visual properties - simple, no glow
+  // Visual properties
   this.pulseTime = 0;
-  this.baseRadius = 12; // Bigger for visibility
+  this.baseRadius = 18; // Size for the sprite
   
   // Lifetime before auto-despawn (15 seconds - longer to collect)
   this.lifetime = 900;
@@ -37,35 +41,37 @@ var DataFragment = function() {
   };
   
   /**
-   * Draw simple orange diamond/square - NO GLOW
+   * Draw data fragment using sprite image
    */
   this.draw = function() {
     if (!this.visible) return;
     
     var ctx = this.context;
-    var pulse = Math.sin(this.pulseTime) * 0.15 + 1; // Subtle pulse
+    var pulse = Math.sin(this.pulseTime) * 0.1 + 1; // Subtle pulse
     var fadeAlpha = this.age > this.lifetime * 0.7 
       ? 1 - ((this.age - this.lifetime * 0.7) / (this.lifetime * 0.3))
       : 1;
     
-    var r = this.baseRadius * pulse;
+    var size = this.baseRadius * 2 * pulse;
     
-    // Simple diamond shape - solid color
-    ctx.beginPath();
-    ctx.moveTo(0, -r);
-    ctx.lineTo(r, 0);
-    ctx.lineTo(0, r);
-    ctx.lineTo(-r, 0);
-    ctx.closePath();
+    ctx.globalAlpha = fadeAlpha;
     
-    // Solid orange fill
-    ctx.fillStyle = 'rgba(232, 107, 56, ' + fadeAlpha + ')';
-    ctx.fill();
+    // Draw the sprite centered
+    if (DATA_FRAGMENT_IMG.complete && DATA_FRAGMENT_IMG.naturalWidth > 0) {
+      ctx.drawImage(DATA_FRAGMENT_IMG, -size/2, -size/2, size, size);
+    } else {
+      // Fallback: simple diamond if image not loaded
+      ctx.beginPath();
+      ctx.moveTo(0, -size/2);
+      ctx.lineTo(size/2, 0);
+      ctx.lineTo(0, size/2);
+      ctx.lineTo(-size/2, 0);
+      ctx.closePath();
+      ctx.fillStyle = '#E86B38';
+      ctx.fill();
+    }
     
-    // Orange border
-    ctx.strokeStyle = 'rgba(255, 150, 80, ' + fadeAlpha + ')';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.globalAlpha = 1;
   };
   
   /**
@@ -78,8 +84,42 @@ var DataFragment = function() {
         DASEMode.addFragment(1);
         SFX.fragmentCollect();
         // Track stats
-        if (Game.stats) {
-          Game.stats.fragmentsCollected++;
+        if (window.Game && window.Game.stats) {
+          window.Game.stats.fragmentsCollected++;
+          var total = window.Game.stats.fragmentsCollected;
+          var tier = window.Game.stats.fragmentAchievementTier || 0;
+          var nextTier = tier;
+          var nextIcon = window.Game.stats.fragmentAchievementIcon || null;
+          var announceText = null;
+
+          if (total >= 60 && tier < 3) {
+            nextTier = 3;
+            nextIcon = 'assets/Badge_Exabyte_Legend_60.png';
+            announceText = 'EXABYTE LEGEND ACHIEVED!';
+            window.Game.stats.fragmentAchievementName = 'EXABYTE LEGEND';
+          } else if (total >= 40 && tier < 2) {
+            nextTier = 2;
+            nextIcon = 'assets/Badge_Petabyte_Architect_40.png';
+            announceText = 'PETABYTE ARCHITECT ACHIEVED!';
+            window.Game.stats.fragmentAchievementName = 'PETABYTE ARCHITECT';
+          } else if (total >= 20 && tier < 1) {
+            nextTier = 1;
+            nextIcon = 'assets/Badge_Data_Engineer_20.png';
+            announceText = 'DATA ENGINEER ACHIEVED!';
+            window.Game.stats.fragmentAchievementName = 'DATA ENGINEER';
+          }
+
+          if (nextTier !== tier) {
+            window.Game.stats.fragmentAchievementTier = nextTier;
+            window.Game.stats.fragmentAchievementIcon = nextIcon;
+            console.log('[DataFragment] Achievement unlocked!', nextIcon, announceText, 'Total fragments:', total);
+            if (window.HUD && typeof HUD.showAchievementToast === 'function') {
+              HUD.showAchievementToast(announceText || 'ACHIEVEMENT UNLOCKED!');
+            }
+            if (window.HUD && typeof HUD.showAchievementEmoji === 'function') {
+              HUD.showAchievementEmoji(nextIcon);
+            }
+          }
         }
       }
       this.die();

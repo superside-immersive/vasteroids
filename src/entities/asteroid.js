@@ -98,30 +98,30 @@ function getCharSprite(char, color) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Layer 1: Outer soft cyan glow (very subtle, wide)
-  ctx.shadowColor = 'rgba(31, 217, 254, 0.15)';
+  // Layer 1: Outer soft white glow (very subtle, wide)
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.12)';
   ctx.shadowBlur = renderSize * 1.2;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
-  ctx.fillStyle = 'rgba(31, 217, 254, 0.01)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
   ctx.fillText(char, centerX, centerY);
   
-  // Layer 2: Medium cyan glow
-  ctx.shadowColor = 'rgba(31, 217, 254, 0.25)';
+  // Layer 2: Medium white glow
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
   ctx.shadowBlur = renderSize * 0.6;
-  ctx.fillStyle = 'rgba(31, 217, 254, 0.05)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
   ctx.fillText(char, centerX, centerY);
   
   // Layer 3: Inner tight glow (brighter)
-  ctx.shadowColor = 'rgba(31, 217, 254, 0.4)';
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.35)';
   ctx.shadowBlur = renderSize * 0.25;
-  ctx.fillStyle = 'rgba(156, 163, 175, 0.3)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
   ctx.fillText(char, centerX, centerY);
   
-  // Layer 4: Core text - crisp white-ish with subtle cyan tint
+  // Layer 4: Core text - crisp white
   ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
   ctx.shadowBlur = renderSize * 0.08;
-  ctx.fillStyle = '#B8C4CE';
+  ctx.fillStyle = '#FFFFFF';
   ctx.fillText(char, centerX, centerY);
   
   // Layer 5: Highlight pass - very subtle bright core
@@ -355,7 +355,13 @@ var Asteroid = function () {
     var wobble = Math.sin(this.time * 1.5) * 0.03;
     ctx.rotate(wobble);
 
-    ctx.strokeStyle = THEME.primary;
+    var outlineColor = '#FFFFFF';
+    if (this.similarityGroup && window.SimilarityMode && SimilarityMode.isActive()) {
+      var colors = SimilarityMode.getColors();
+      outlineColor = colors[this.similarityGroup] || outlineColor;
+    }
+
+    ctx.strokeStyle = outlineColor;
     ctx.lineWidth = 1.2;
     ctx.globalAlpha = 0.45 + Math.sin(this.time * 2) * 0.1;
 
@@ -385,7 +391,7 @@ var Asteroid = function () {
 
     // Add subtle inner glow
     ctx.globalAlpha = 0.08;
-    ctx.fillStyle = THEME.primary;
+    ctx.fillStyle = outlineColor;
     ctx.fill();
 
     ctx.restore();

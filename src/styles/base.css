@@ -1,0 +1,139 @@
+/**
+ * ==========================================================================
+ * BASE STYLES
+ * ==========================================================================
+ * 
+ * Foundation styles for the game UI including body, containers, overlays,
+ * panels, and utility classes.
+ * 
+ * @description Core layout and utility styles
+ * @author VAsteroids Team
+ * @version 1.0.0
+ * @requires tokens.css
+ * 
+ * STRUCTURE:
+ *   1. Body & Typography
+ *   2. Game Container
+ *   3. Safari Performance Mode
+ *   4. UI Overlay System
+ *   5. UI Panel Component
+ *   6. Utility Classes
+ * 
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   1. BODY & TYPOGRAPHY
+   ========================================================================== */
+
+body {
+  font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
+  color: var(--ui-text);
+  background: #0E142C;
+}
+
+/* ==========================================================================
+   2. GAME CONTAINER
+   ========================================================================== */
+
+#game-container {
+  filter: drop-shadow(0 0 18px rgba(31, 217, 254, 0.2));
+}
+
+/* ==========================================================================
+   3. SAFARI PERFORMANCE MODE
+   ========================================================================== 
+   
+   Performance optimizations for Safari/WebKit browsers.
+   Disables expensive filters and animations to improve frame rate.
+   
+   Enabled via: document.documentElement.classList.add('safari-perf')
+   Typically triggered in main.js based on user agent detection.
+*/
+
+html.safari-perf #game-container {
+  filter: none !important;
+}
+
+html.safari-perf .scoreboard-panel::before,
+html.safari-perf .scoreboard-panel::after {
+  animation: none !important;
+}
+
+html.safari-perf .scoreboard-panel::after {
+  opacity: 0.03;
+}
+
+html.safari-perf .scoreboard-panel .text-glow {
+  animation: none !important;
+}
+
+html.safari-perf .qr-scanner-overlay {
+  backdrop-filter: none !important;
+}
+
+/* ==========================================================================
+   4. UI OVERLAY SYSTEM
+   ========================================================================== 
+   
+   Full-screen overlay container for UI elements.
+   By default, overlays don't capture pointer events (pass-through).
+   Add .interactive class to enable pointer events.
+*/
+
+.ui-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  color: var(--ui-text);
+  text-align: center;
+  font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
+}
+
+.ui-overlay.interactive {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+/* ==========================================================================
+   5. UI PANEL COMPONENT
+   ========================================================================== 
+   
+   Centered modal panel component.
+   Used as base for game-over screen, scoreboards, dialogs, etc.
+*/
+
+.ui-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-glow);
+  padding: 18px 22px;
+  border-radius: 10px;
+  min-width: 320px;
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   6. UTILITY CLASSES
+   ========================================================================== */
+
+/**
+ * Text Glow
+ * Applies a subtle cyan glow to text elements
+ */
+.text-glow {
+  text-shadow: 0 0 12px rgba(124, 240, 255, 0.5);
+}
+
+/**
+ * Hidden
+ * Force-hides an element with !important
+ */
+.hidden { 
+  display: none !important; 
+}

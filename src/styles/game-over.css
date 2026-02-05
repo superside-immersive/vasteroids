@@ -1,0 +1,378 @@
+/**
+ * ==========================================================================
+ * GAME OVER
+ * ==========================================================================
+ * 
+ * Game over screen including score breakdown, name entry, and result display.
+ * Features animated reveal of score components and rank styling.
+ * 
+ * @description Game over panel and score breakdown styles
+ * @author VAsteroids Team
+ * @version 1.0.0
+ * @requires tokens.css, animations.css
+ * 
+ * COMPONENTS:
+ * 
+ *   PANEL LAYOUT:
+ *     - .game-over-panel     : Main game over container
+ *     - .name-entry-row      : Name input section layout
+ *     - .entry-divider       : Visual divider between options
+ * 
+ *   SCORE BREAKDOWN:
+ *     - .score-breakdown     : Score details container
+ *     - .breakdown-title     : Section heading
+ *     - .breakdown-content   : Row container
+ *     - .breakdown-row       : Individual score line
+ * 
+ *   ROW TYPES:
+ *     - .breakdown-row--total: Final score (prominent)
+ *     - .breakdown-row--score: Point category
+ *     - .breakdown-row--stat : Statistic (no points)
+ *     - .breakdown-row--bonus: Bonus multiplier
+ *     - .breakdown-row--badge: Achievement badge
+ * 
+ *   RANK STYLING:
+ *     - .rank-1 through .rank-3: Podium colors
+ *     - .rank-other           : Standard ranking
+ *     - .high-score-glow      : New high score effect
+ * 
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   GAME OVER PANEL
+   ========================================================================== */
+
+.game-over-panel {
+  min-width: 420px;
+  max-width: 480px;
+}
+
+/* ==========================================================================
+   NAME ENTRY SECTION
+   ========================================================================== */
+
+.name-entry-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-section .input-name {
+  width: 130px;
+  text-align: center;
+  padding: 12px 10px;
+}
+
+.submit-btn {
+  margin-top: 8px;
+  padding: 10px 24px;
+  font-size: 13px;
+}
+
+/* Entry Divider ("OR") */
+.entry-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  position: relative;
+}
+
+.entry-divider::before {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--ui-border), transparent);
+}
+
+.entry-divider span {
+  background: var(--ui-panel);
+  padding: 8px 4px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--ui-muted);
+  z-index: 1;
+}
+
+/* ==========================================================================
+   RESPONSIVE: Small Screens
+   ========================================================================== */
+
+@media screen and (max-width: 500px) {
+  .game-over-panel {
+    min-width: 300px;
+    max-width: 340px;
+  }
+
+  .name-entry-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .entry-divider {
+    height: auto;
+    width: 100%;
+  }
+
+  .entry-divider::before {
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--ui-border), transparent);
+  }
+
+  .qr-inline-wrapper,
+  .input-section .input-name {
+    width: 150px;
+  }
+}
+
+/* ==========================================================================
+   SCORE BREAKDOWN CONTAINER
+   ========================================================================== */
+
+.score-breakdown {
+  background: linear-gradient(180deg, rgba(20, 30, 60, 0.75) 0%, rgba(14, 22, 48, 0.85) 100%);
+  border: 2px solid rgba(31, 217, 254, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  max-height: none;
+  overflow: visible;
+}
+
+.breakdown-title {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: rgba(31, 217, 254, 0.85);
+  margin-bottom: 8px;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.breakdown-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ==========================================================================
+   BREAKDOWN ROWS
+   ========================================================================== */
+
+/* Base Row */
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.breakdown-row:hover {
+  background: rgba(31, 217, 254, 0.08);
+  transform: scale(1.02);
+}
+
+/* Labels & Values */
+.breakdown-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.breakdown-value {
+  color: var(--ui-text);
+  font-weight: 600;
+  font-size: 21px;
+}
+
+.breakdown-count {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* ==========================================================================
+   ROW ANIMATION STATES
+   ========================================================================== */
+
+/* Hidden State (before reveal) */
+.breakdown-row--hidden {
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
+  filter: blur(4px);
+}
+
+/* Reveal Animation */
+.breakdown-row--reveal {
+  animation: rowReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Glow Flash on Reveal */
+.breakdown-row--reveal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, transparent, rgba(31, 217, 254, 0.3), transparent);
+  animation: rowGlowFlash 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   ROW TYPES
+   ========================================================================== */
+
+/* Total Row - Most Prominent */
+.breakdown-row--total {
+  position: relative;
+  background: linear-gradient(90deg, rgba(31, 217, 254, 0.18) 0%, rgba(31, 217, 254, 0.06) 100%);
+  border: 1px solid rgba(31, 217, 254, 0.4);
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+}
+
+.breakdown-row--total .breakdown-label {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: rgba(31, 217, 254, 0.8);
+}
+
+.breakdown-row--total .breakdown-value--total {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1FD9FE;
+  text-shadow: 0 0 15px rgba(31, 217, 254, 0.5);
+}
+
+/* Animated counter glow on reveal */
+.breakdown-row--total.breakdown-row--reveal .breakdown-value--total {
+  animation: scoreCountGlow 0.6s ease-out, scoreGlow 2s ease-in-out 0.6s infinite;
+}
+
+/* Score Row - Point Categories */
+.breakdown-row--score {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.breakdown-row--score .breakdown-value--score {
+  color: #7cf0ff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Stat Row - Statistics without points */
+.breakdown-row--stat {
+  position: relative;
+  background: transparent;
+}
+
+/* Bonus Row - Gold accent */
+.breakdown-row--bonus {
+  position: relative;
+  background: linear-gradient(90deg, rgba(255, 188, 66, 0.1) 0%, transparent 100%);
+  border-left: 2px solid #FFBC42;
+}
+
+.breakdown-value--bonus {
+  color: #FFBC42 !important;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 188, 66, 0.4);
+}
+
+/* Badge Row - Centered */
+.breakdown-row--badge {
+  justify-content: center;
+  background: transparent;
+  padding: 6px 8px;
+  margin-top: 2px;
+}
+
+.breakdown-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.breakdown-badge-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 6px;
+  filter: drop-shadow(0 0 6px rgba(124, 240, 255, 0.6));
+}
+
+.breakdown-badge-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #FFBC42;
+  text-shadow: 0 0 10px rgba(255, 188, 66, 0.4);
+}
+
+/* ==========================================================================
+   RANK STYLING
+   ========================================================================== */
+
+.breakdown-rank {
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  margin-top: 4px;
+}
+
+/* Gold - 1st Place */
+.rank-1 {
+  color: #FFD700 !important;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), transparent) !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+/* Silver - 2nd Place */
+.rank-2 {
+  color: #C0C0C0 !important;
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), transparent) !important;
+  text-shadow: 0 0 10px rgba(192, 192, 192, 0.8);
+  border: 1px solid rgba(192, 192, 192, 0.3);
+}
+
+/* Bronze - 3rd Place */
+.rank-3 {
+  color: #CD7F32 !important;
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), transparent) !important;
+  text-shadow: 0 0 10px rgba(205, 127, 50, 0.8);
+  border: 1px solid rgba(205, 127, 50, 0.3);
+}
+
+/* Other Ranks */
+.rank-other {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* High Score Celebration Effect */
+.high-score-glow {
+  animation: highScoreGlow 1s ease-in-out infinite;
+}
