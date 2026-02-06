@@ -287,12 +287,15 @@ var IntroManager = {
     
     // Maintain correct aspect ratio (2263 / 452 = 5.01)
     var aspectRatio = this.titleLogoSize.w / this.titleLogoSize.h;  // 5.01
-    var maxWidth = Game.canvasWidth * 0.75;  // Logo más grande
-    var w = maxWidth;
+    // Use fixed 540-based reference so logo is same absolute size in both orientations
+    var REF = 540;
+    var w = REF * 0.75;
     var h = w / aspectRatio;
     
     var x = (Game.canvasWidth - w) / 2;
-    var y = Game.canvasHeight * 0.36;  // Centrado verticalmente
+    // In landscape (short canvas), push title higher so it doesn't overlap VAST logo
+    var isLandscape = Game.canvasWidth > Game.canvasHeight;
+    var y = isLandscape ? (Game.canvasHeight * 0.18) : (Game.canvasHeight * 0.36);
     
     context.save();
     context.globalAlpha = alpha;
@@ -310,15 +313,18 @@ var IntroManager = {
   _drawVastLogo: function(context, scale, alpha, textAlpha) {
     if (!this.vastLogoLoaded) return;
     
-    // VAST logo positioning - centered below middle, más grande
+    // VAST logo positioning - centered below middle
     var aspectRatio = this.vastLogoSize.w / this.vastLogoSize.h;  // ~4.04
-    var maxWidth = Game.canvasWidth * 0.35;  // Tamaño apropiado
+    // Use fixed 540-based reference so logo is same absolute size in both orientations
+    var REF = 540;
+    var maxWidth = REF * 0.35;
     var w = maxWidth * scale;
     var h = w / aspectRatio;
     
-    // Center the logo horizontally, position below vertical center
     var x = (Game.canvasWidth - w) / 2;
-    var y = Game.canvasHeight * 0.50;  // Abajo del logo VASTEROIDS
+    // In landscape, push VAST logo a bit lower to increase gap from title
+    var isLandscape = Game.canvasWidth > Game.canvasHeight;
+    var y = isLandscape ? (Game.canvasHeight * 0.58) : (Game.canvasHeight * 0.50);
     
     context.save();
     context.globalAlpha = alpha;
@@ -357,12 +363,15 @@ var IntroManager = {
   _drawShipOverlay: function(context, ship, elapsed, introScale, shipAlpha) {
     if (!ship || shipAlpha < 0.01 || !this.vastLogoLoaded) return;
     
-    // Match the ship icon inside the VAST logo
+    // Match the ship icon inside the VAST logo (same formula as _drawVastLogo)
     var aspectRatio = this.vastLogoSize.w / this.vastLogoSize.h;  // ~4.04
-    var logoWidth = Game.canvasWidth * 0.35;
+    // Use fixed 540-based reference so ship position matches logo in both orientations
+    var REF = 540;
+    var logoWidth = REF * 0.35;
     var logoHeight = logoWidth / aspectRatio;
     var logoX = (Game.canvasWidth - logoWidth) / 2;
-    var logoY = Game.canvasHeight * 0.50;
+    var isLandscape = Game.canvasWidth > Game.canvasHeight;
+    var logoY = isLandscape ? (Game.canvasHeight * 0.58) : (Game.canvasHeight * 0.50);
     
     // Icon pivot is at (34.5, 23.5) in the logo's viewBox coordinates
     // Scale these coordinates to match the drawn logo size

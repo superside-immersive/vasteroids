@@ -36,8 +36,8 @@ $(function () {
 
   // Canvas setup
   var canvas = $("#canvas");
-  Game.canvasWidth = canvas.width();
-  Game.canvasHeight = canvas.height();
+  Game.canvasWidth = canvas[0].width;
+  Game.canvasHeight = canvas[0].height;
 
   var context = canvas[0].getContext("2d");
   var canvasNode = canvas[0];

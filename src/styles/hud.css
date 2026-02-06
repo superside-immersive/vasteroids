@@ -51,6 +51,13 @@
   pointer-events: none;
 }
 
+/* Landscape mode: center HUD chips and add extra top spacing */
+#game-container[data-orientation="landscape"] .hud-bar {
+  padding-top: 16px;
+  gap: 18px;
+  justify-content: center;
+}
+
 /* ==========================================================================
    HUD CHIPS
    ========================================================================== 

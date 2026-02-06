@@ -141,14 +141,17 @@ var GameFSM = {
    * Spawn player ship
    */
   spawn_ship: function () {
-    // Reset ship to VAST logo icon position (match intro logo)
+    // Reset ship to VAST logo icon position (match intro logo - same formula as _drawVastLogo)
     var aspectRatio = IntroManager && IntroManager.vastLogoSize
       ? (IntroManager.vastLogoSize.w / IntroManager.vastLogoSize.h)
       : (242.201 / 60);
-    var logoWidth = Game.canvasWidth * 0.35;
+    // Use fixed 540-based reference so ship size is same in both orientations
+    var REF = 540;
+    var logoWidth = REF * 0.35;
     var logoHeight = logoWidth / aspectRatio;
     var logoX = (Game.canvasWidth - logoWidth) / 2;
-    var logoY = Game.canvasHeight * 0.50;
+    var isLandscape = Game.canvasWidth > Game.canvasHeight;
+    var logoY = isLandscape ? (Game.canvasHeight * 0.58) : (Game.canvasHeight * 0.50);
     // Pivot is at (34.5, 23.5) in viewBox coordinates - scale to match drawn logo
     var vastLogoSize = IntroManager && IntroManager.vastLogoSize ? IntroManager.vastLogoSize : { w: 242.201, h: 60 };
     var scaleX = logoWidth / vastLogoSize.w;

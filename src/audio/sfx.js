@@ -207,9 +207,13 @@ SFX.hyperspace = function() {
 };
 
 SFX.siloSpawn = function() {
+  if (SFX.muted) return;
   var played = this.siloAudio();
   if (!played) {
     try {
+      if (!SFX._unlocked) {
+        try { SFX.unlock(); } catch (e) {}
+      }
       var audio = new Audio(SFX._soundSources.siloAudio || 'assets/audio/silo_spawn.wav');
       audio.volume = 0.7;
       audio.play().catch(function(){});

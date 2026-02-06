@@ -40,6 +40,17 @@ body {
   filter: drop-shadow(0 0 18px rgba(31, 217, 254, 0.2));
 }
 
+/* Ensure container always matches the canvas dimensions */
+#game-container[data-orientation="portrait"] {
+  width: 540px;
+  height: 960px;
+}
+
+#game-container[data-orientation="landscape"] {
+  width: 960px;
+  height: 540px;
+}
+
 /* ==========================================================================
    3. SAFARI PERFORMANCE MODE
    ========================================================================== 

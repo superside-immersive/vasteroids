@@ -62,18 +62,20 @@
         color: #E5E7EB; 
         font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
         margin: 0;
-        padding: 16px;
-        min-height: 100vh;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
       }
       
       #game-container { 
         background: #0E142C;
         position: relative;
         display: inline-block;
-        transform-origin: top center;
+        transform-origin: center center;
       }
       
       #canvas { 
@@ -123,6 +125,172 @@
         border: 1px solid #1FD9FE;
       }
 
+      body.fullscreen {
+        padding: 0;
+        overflow: hidden;
+        justify-content: center;
+      }
+      body.fullscreen #canvas {
+        border-color: transparent;
+      }
+
+      /* Control buttons (bottom-right stack) */
+      .game-controls-stack {
+        position: fixed;
+        bottom: 12px;
+        right: 12px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
+      }
+      body.fullscreen .game-controls-stack {
+        display: none;
+      }
+      .game-ctrl-btn {
+        padding: 8px 14px;
+        background: rgba(14, 20, 44, 0.85);
+        border: 1px solid #1FD9FE;
+        border-radius: 8px;
+        color: #7cf0ff;
+        font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
+        font-size: 11px;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+      }
+      .game-ctrl-btn:hover {
+        background: rgba(31, 217, 254, 0.15);
+      }
+
+      /* ---- Fixed scoreboard table height (both orientations) ---- */
+      .scoreboard-table tbody {
+        display: block;
+        overflow: hidden;
+      }
+      .scoreboard-table thead,
+      .scoreboard-table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+      /* Portrait: 10 rows at ~32px each */
+      #game-container[data-orientation="portrait"] .scoreboard-table tbody {
+        height: 320px;
+      }
+
+      /* ---- Landscape overrides for scoreboard ---- */
+      #game-container[data-orientation="landscape"] .scoreboard-shell.ui-panel {
+        min-width: 340px;
+        max-width: 340px;
+        width: 340px;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-title {
+        font-size: 16px;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-table {
+        font-size: 13px;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-table th,
+      #game-container[data-orientation="landscape"] .scoreboard-table td {
+        padding: 3px 3px;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-panel {
+        padding: 8px 10px;
+        overflow: hidden;
+      }
+      /* Lock table body height so scroll animation doesn't resize the panel */
+      #game-container[data-orientation="landscape"] .scoreboard-table tbody {
+        display: block;
+        height: 260px;
+        overflow: hidden;
+      }
+      /* Shrink badge icons in landscape so rows fit */
+      #game-container[data-orientation="landscape"] .scoreboard-badge-icon {
+        width: 18px;
+        height: 18px;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-table thead,
+      #game-container[data-orientation="landscape"] .scoreboard-table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-table thead {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+      #game-container[data-orientation="landscape"] .prompt-pill {
+        padding: 6px 16px;
+        font-size: 10px;
+        margin-top: 8px;
+      }
+      #game-container[data-orientation="landscape"] .scoreboard-cta {
+        padding: 6px 16px;
+        font-size: 10px;
+        margin-top: 8px;
+      }
+
+      /* ---- Landscape overrides for game-over panel ---- */
+      #game-container[data-orientation="landscape"] .game-over-panel {
+        min-width: 360px;
+        max-width: 420px;
+        padding: 10px 14px;
+      }
+      #game-container[data-orientation="landscape"] .score-breakdown {
+        padding: 8px 10px;
+        margin-bottom: 8px;
+      }
+      #game-container[data-orientation="landscape"] .breakdown-title {
+        font-size: 11px;
+        letter-spacing: 2px;
+        margin-bottom: 4px;
+      }
+      #game-container[data-orientation="landscape"] .breakdown-label {
+        font-size: 12px;
+      }
+      #game-container[data-orientation="landscape"] .breakdown-value {
+        font-size: 15px;
+      }
+      #game-container[data-orientation="landscape"] .breakdown-row--total .breakdown-value--total {
+        font-size: 20px;
+      }
+      #game-container[data-orientation="landscape"] .breakdown-row {
+        padding: 2px 6px;
+      }
+      #game-container[data-orientation="landscape"] .name-entry-row {
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      #game-container[data-orientation="landscape"] .submit-btn {
+        padding: 6px 16px;
+        font-size: 11px;
+      }
+      /* Game-over title is set inline at 28px — override for landscape */
+      #game-container[data-orientation="landscape"] .game-over-panel .text-glow {
+        font-size: 20px !important;
+        margin-bottom: 8px !important;
+      }
+      /* QR section compact in landscape */
+      #game-container[data-orientation="landscape"] .qr-inline-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+      #game-container[data-orientation="landscape"] .qr-section label,
+      #game-container[data-orientation="landscape"] .input-section label {
+        font-size: 10px;
+      }
+      #game-container[data-orientation="landscape"] .input-section .input-name {
+        width: 110px;
+        padding: 8px 8px;
+        font-size: 12px;
+      }
+
       .debug-tools {
         display: none;
       }
@@ -166,7 +334,7 @@
     </style>
   </head>
   <body>
-    <div id="game-container">
+    <div id="game-container" ondblclick="if(window._vastToggleFullscreen)_vastToggleFullscreen()">
       <canvas id="canvas" width="540" height="960"></canvas>
       <div id="left-controls">
         <div id="up" class="button">THRUST</div>
@@ -176,6 +344,11 @@
       <div id="right-controls">
         <div id="space" class="button">FIRE</div>
       </div>
+    </div>
+
+    <div class="game-controls-stack">
+      <button class="game-ctrl-btn" id="fullscreen-btn" title="Fullscreen (ESC to exit)">⛶ FULLSCREEN</button>
+      <button class="game-ctrl-btn" id="orientation-toggle" title="Switch orientation">⟳ LANDSCAPE</button>
     </div>
     
     <div class="debug-tools">
@@ -221,13 +394,94 @@
       (function() {
         var container = document.getElementById('game-container');
         if (!container) return;
+
+        var PORTRAIT_W = 540, PORTRAIT_H = 960;
+        var LANDSCAPE_W = 960, LANDSCAPE_H = 540;
+        var STORAGE_KEY = 'vasteroids.orientation';
+
+        // Read saved orientation from localStorage (default: portrait)
+        function getSavedOrientation() {
+          try { return localStorage.getItem(STORAGE_KEY) || 'portrait'; } catch(e) { return 'portrait'; }
+        }
+
+        var orientation = getSavedOrientation();
+        var targetW = orientation === 'landscape' ? LANDSCAPE_W : PORTRAIT_W;
+        var targetH = orientation === 'landscape' ? LANDSCAPE_H : PORTRAIT_H;
+
+        container.setAttribute('data-orientation', orientation);
+
+        var canvasEl = document.getElementById('canvas');
+        if (canvasEl) {
+          canvasEl.width = targetW;
+          canvasEl.height = targetH;
+        }
+
+        if (window.Game) {
+          Game.canvasWidth = targetW;
+          Game.canvasHeight = targetH;
+        }
+
+        // Scale container to fit viewport
+        // Canvas has 1px border → container is (targetW+2) × (targetH+2)
+        var borderTotal = 2; // 1px border on each side
         function updateScale() {
-          var padding = 32;
+          var isFS = !!document.fullscreenElement;
+          var padding = isFS ? 0 : 32;
           var availW = window.innerWidth - padding;
           var availH = window.innerHeight - padding;
-          var scale = Math.min(availW / 540, availH / 960, 1);
-          container.style.transform = 'scale(' + scale.toFixed(3) + ')';
+          var containerW = targetW + borderTotal;
+          var containerH = targetH + borderTotal;
+          var scale = Math.min(availW / containerW, availH / containerH);
+          if (!isFS) scale = Math.min(scale, 1);
+          container.style.transform = 'scale(' + scale.toFixed(4) + ')';
         }
+
+        // Fullscreen toggle — fullscreen the whole page so window.innerWidth/Height report screen size
+        window._vastToggleFullscreen = function() {
+          if (!document.fullscreenElement) {
+            var el = document.documentElement;
+            (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+          } else {
+            (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+          }
+        };
+
+        document.addEventListener('fullscreenchange', function() {
+          document.body.classList.toggle('fullscreen', !!document.fullscreenElement);
+          updateScale();
+        });
+        document.addEventListener('webkitfullscreenchange', function() {
+          document.body.classList.toggle('fullscreen', !!document.fullscreenElement);
+          updateScale();
+        });
+
+        // Fullscreen button
+        var fsBtn = document.getElementById('fullscreen-btn');
+        if (fsBtn) {
+          fsBtn.addEventListener('click', function() {
+            if (window._vastToggleFullscreen) _vastToggleFullscreen();
+          });
+        }
+
+        // ESC to exit fullscreen
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && document.fullscreenElement) {
+            e.preventDefault();
+            (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+          }
+        });
+
+        // Orientation toggle button
+        var toggleBtn = document.getElementById('orientation-toggle');
+        if (toggleBtn) {
+          toggleBtn.textContent = orientation === 'portrait' ? '⟳ LANDSCAPE' : '⟳ PORTRAIT';
+          toggleBtn.addEventListener('click', function() {
+            var next = orientation === 'portrait' ? 'landscape' : 'portrait';
+            try { localStorage.setItem(STORAGE_KEY, next); } catch(e) {}
+            window.location.reload();
+          });
+        }
+
         window.addEventListener('resize', updateScale);
         updateScale();
       })();
