@@ -113,6 +113,9 @@ var DataFragment = function() {
             window.Game.stats.fragmentAchievementTier = nextTier;
             window.Game.stats.fragmentAchievementIcon = nextIcon;
             console.log('[DataFragment] Achievement unlocked!', nextIcon, announceText, 'Total fragments:', total);
+            if (window.SFX && typeof SFX.badgeUnlock === 'function') {
+              SFX.badgeUnlock();
+            }
             if (window.HUD && typeof HUD.showAchievementToast === 'function') {
               HUD.showAchievementToast(announceText || 'ACHIEVEMENT UNLOCKED!');
             }

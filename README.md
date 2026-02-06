@@ -49,7 +49,7 @@ http://dougmcinnes.com/2010/05/12/html-5-asteroids/
 Recommended (local server):
 
 ```bash
-cd vasteroid_demo
+cd vasteroids
 python3 -m http.server 8000
 ```
 
@@ -90,6 +90,15 @@ Environment variables (optional):
 
 - `DATABASE_URL` (see `server/.env.example`)
 - `CORS_ORIGIN` (default: `*`)
+- `ADMIN_TOKEN` (optional; if unset, admin routes are localhost-only)
+
+On startup the server auto-applies `server/schema.sql` and seeds placeholder scores if needed.
+
+Admin endpoints (optional):
+
+- `GET /admin/scores` (requires admin token or localhost)
+- `DELETE /admin/scores/:id`
+- `POST /admin/scores/reset`
 
 #### 3) Run the game with Live Server
 
@@ -215,9 +224,9 @@ You can override the scoreboard server URL any time via:
 ## Audio System
 
 - `SFX` module with pooled audio instances
-- Sounds: laser, explosion
 - Cooldown system to prevent audio stacking
 - Mute toggle support
+- Active sounds include: laser, asteroid explosion, badge unlock, hyperspace, fragment collect, DASE activate, beam severed/restored, similarity, silo spawn, wave complete, player death, game start, shield hum, chain implosion, game-over alarm, name accept, menu select
 
 ---
 
@@ -320,6 +329,7 @@ vasteroid_demo/
 - Original HTML5-Asteroids concept: Doug McInnes (2010)
 - Vector typeface: `vector_battle_regular.typeface.js`
 - Animation library: anime.js (CDN)
+- Audio SFX resource: "512 Sound Effects (8-bit style)" by SubspaceAudio (CC0 / Public Domain) https://opengameart.org/content/512-sound-effects-8-bit-style
 
 ---
 

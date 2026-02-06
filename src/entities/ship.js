@@ -301,6 +301,9 @@ var Ship = function () {
         if (dist < radius + 20) { // Shield radius + asteroid buffer
           // Destroy asteroid
           Game.explosionAt(sprite.x, sprite.y);
+          if (window.SFX && typeof SFX.asteroidExplosion === 'function') {
+            SFX.asteroidExplosion();
+          }
           sprite.die();
         }
       }
@@ -345,6 +348,9 @@ var Ship = function () {
     this.currentNode.leave(this);
     this.currentNode = null;
     Game.lives--;
+    if (Game.lives < 0) {
+      SFX.gameOverAlarm();
+    }
   };
   
   /**

@@ -171,6 +171,7 @@ var DASEMode = (function() {
     
     ctx.save();
     ctx.translate(this.x, this.y);
+    ctx.rotate(this.orbitAngle);
     
     var size = 36;
     
@@ -471,8 +472,29 @@ var DASEMode = (function() {
     draw: function(ctx) {
       if (!active || !turret) return;
       
-      // Draw energy beam (simple cyan line)
+      // Draw energy beam (connect to dotted orbit ring, not ship center)
       if (Game.ship && Game.ship.visible) {
+        var ringRadius = Math.max(32, turret.orbitRadius * 0.55);
+        var dxRing = turret.x - Game.ship.x;
+        var dyRing = turret.y - Game.ship.y;
+        var distRing = Math.sqrt(dxRing * dxRing + dyRing * dyRing) || 1;
+        var ringX = Game.ship.x + (dxRing / distRing) * ringRadius;
+        var ringY = Game.ship.y + (dyRing / distRing) * ringRadius;
+        var stemLength = 10;
+        var stemX = ringX + (dxRing / distRing) * stemLength;
+        var stemY = ringY + (dyRing / distRing) * stemLength;
+
+        // Dotted ring around ship
+        ctx.save();
+        ctx.strokeStyle = '#1FD9FE';
+        ctx.globalAlpha = beamSevered ? 0.35 : 0.7;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 10]);
+        ctx.beginPath();
+        ctx.arc(Game.ship.x, Game.ship.y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
         ctx.save();
         
         if (beamSevered) {
@@ -488,7 +510,12 @@ var DASEMode = (function() {
         
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(Game.ship.x, Game.ship.y);
+        ctx.moveTo(ringX, ringY);
+        ctx.lineTo(stemX, stemY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(stemX, stemY);
         ctx.lineTo(turret.x, turret.y);
         ctx.stroke();
         
@@ -499,6 +526,15 @@ var DASEMode = (function() {
           ctx.lineWidth = 8;
           ctx.stroke();
         }
+
+        // Cyan node at ring connection
+        ctx.beginPath();
+        ctx.arc(ringX, ringY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#1FD9FE';
+        ctx.shadowColor = '#1FD9FE';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
         
         ctx.restore();
       }

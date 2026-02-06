@@ -58,6 +58,9 @@ var GameFSM = {
       KEY_STATUS.space = false;
       window.gameStart = false;
       this._startRequested = true;
+      if (window.SFX && SFX.menuSelect) {
+        SFX.menuSelect();
+      }
       Game.skipWaiting = false;
       if (window.Scoreboard) {
         Scoreboard.setSuppressed(true);

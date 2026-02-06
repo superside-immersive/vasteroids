@@ -62,13 +62,18 @@
         color: #E5E7EB; 
         font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
         margin: 0;
-        padding: 20px;
+        padding: 16px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       
       #game-container { 
         background: #0E142C;
         position: relative;
         display: inline-block;
+        transform-origin: top center;
       }
       
       #canvas { 
@@ -116,6 +121,10 @@
         padding: 2px 6px;
         border-radius: 3px;
         border: 1px solid #1FD9FE;
+      }
+
+      .debug-tools {
+        display: none;
       }
 
       .tuning-panel {
@@ -169,44 +178,60 @@
       </div>
     </div>
     
-    <div style="margin-top:12px; color:#E5E7EB; font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;">
-      Letters per asteroid: 
-      <input id="char-slider" type="range" min="40" max="400" step="10" value="200" style="width:240px; vertical-align:middle;">
-      <span id="char-value" style="display:inline-block; width:40px; text-align:right;">200</span>
-      <button id="toggle-retro-tv" aria-pressed="false" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Retro TV: OFF</button>
-    </div>
-    
-    <div class="controls-info">
-      <p>
-        <kbd>←</kbd> <kbd>→</kbd> Rotate | 
-        <kbd>↑</kbd> Thrust | 
-        <kbd>SPACE</kbd> Fire | 
-        <kbd>SHIFT</kbd> Teleport | 
-        <kbd>M</kbd> Mute |
-        <kbd>F</kbd> FPS
-      </p>
-      <button id="test-next-level" style="margin-top:6px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Test NEXT LEVEL</button>
-      <button id="test-similarity" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#FF00FF; border:1px solid #FF00FF; border-radius:6px; cursor:pointer;">Similarity Test</button>
-      <button id="toggle-fps" aria-pressed="false" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">FPS: OFF</button>
-      <span id="fps-readout" style="margin-left:10px; padding:6px 10px; color:#7cf0ff; border:1px solid rgba(31,217,254,0.35); border-radius:6px; display:none;">FPS: --</span>
-      <a href="/qr-demo.html" target="_blank" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; text-decoration:none; font-size:12px;">◫ QR DEMO CODES</a>
-    </div>
-
-    <div class="tuning-panel">
-      <div class="tuning-title">SHIP ROTATION (LIVE)</div>
-      <div class="tuning-row">
-        <span>Start Rot °</span>
-        <input id="ship-start-rot" type="range" min="0" max="360" step="0.1" value="0">
-        <span class="tuning-value" id="ship-start-rot-val">0.0</span>
+    <div class="debug-tools">
+      <div style="margin-top:12px; color:#E5E7EB; font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;">
+        Letters per asteroid: 
+        <input id="char-slider" type="range" min="40" max="400" step="10" value="200" style="width:240px; vertical-align:middle;">
+        <span id="char-value" style="display:inline-block; width:40px; text-align:right;">200</span>
+        <button id="toggle-retro-tv" aria-pressed="false" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Retro TV: OFF</button>
       </div>
-      <div class="tuning-row">
-        <span>Intro Rot °</span>
-        <input id="ship-intro-rot" type="range" min="0" max="360" step="0.1" value="0">
-        <span class="tuning-value" id="ship-intro-rot-val">0.0</span>
+      
+      <div class="controls-info">
+        <p>
+          <kbd>←</kbd> <kbd>→</kbd> Rotate | 
+          <kbd>↑</kbd> Thrust | 
+          <kbd>SPACE</kbd> Fire | 
+          <kbd>SHIFT</kbd> Teleport | 
+          <kbd>M</kbd> Mute |
+          <kbd>F</kbd> FPS
+        </p>
+        <button id="test-next-level" style="margin-top:6px; padding:6px 10px; background:#0f162f; color:#E5E7EB; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">Test NEXT LEVEL</button>
+        <button id="test-similarity" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#FF00FF; border:1px solid #FF00FF; border-radius:6px; cursor:pointer;">Similarity Test</button>
+        <button id="toggle-fps" aria-pressed="false" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; cursor:pointer;">FPS: OFF</button>
+        <span id="fps-readout" style="margin-left:10px; padding:6px 10px; color:#7cf0ff; border:1px solid rgba(31,217,254,0.35); border-radius:6px; display:none;">FPS: --</span>
+        <a href="/qr-demo.html" target="_blank" style="margin-left:10px; padding:6px 10px; background:#0f162f; color:#7cf0ff; border:1px solid #1FD9FE; border-radius:6px; text-decoration:none; font-size:12px;">◫ QR DEMO CODES</a>
+      </div>
+
+      <div class="tuning-panel">
+        <div class="tuning-title">SHIP ROTATION (LIVE)</div>
+        <div class="tuning-row">
+          <span>Start Rot °</span>
+          <input id="ship-start-rot" type="range" min="0" max="360" step="0.1" value="0">
+          <span class="tuning-value" id="ship-start-rot-val">0.0</span>
+        </div>
+        <div class="tuning-row">
+          <span>Intro Rot °</span>
+          <input id="ship-intro-rot" type="range" min="0" max="360" step="0.1" value="0">
+          <span class="tuning-value" id="ship-intro-rot-val">0.0</span>
+        </div>
       </div>
     </div>
 
     <script>
+      (function() {
+        var container = document.getElementById('game-container');
+        if (!container) return;
+        function updateScale() {
+          var padding = 32;
+          var availW = window.innerWidth - padding;
+          var availH = window.innerHeight - padding;
+          var scale = Math.min(availW / 540, availH / 960, 1);
+          container.style.transform = 'scale(' + scale.toFixed(3) + ')';
+        }
+        window.addEventListener('resize', updateScale);
+        updateScale();
+      })();
+
       (function() {
         var btn = document.getElementById('test-next-level');
         if (btn) {

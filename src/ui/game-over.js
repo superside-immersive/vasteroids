@@ -290,6 +290,7 @@ var GameOverUI = (function() {
     awaitingConfirm = false;
     removeKeyHandler();
     confirmPanel.classList.add('hidden');
+    if (window.SFX && SFX.nameAccept) SFX.nameAccept();
     // Name is already in input, just flash and let user save
     input.classList.add('flash');
     setTimeout(function() { input.classList.remove('flash'); }, 500);
@@ -602,6 +603,8 @@ var GameOverUI = (function() {
     stopScanning();
     var name = (input.value || '').trim().toUpperCase();
     if (!name) name = 'ACE';
+
+    if (window.SFX && SFX.nameAccept) SFX.nameAccept();
 
     function computePostGameTotalDelayMs(rank) {
       // Scoreboard.show(true) does:

@@ -545,7 +545,9 @@ var Asteroid = function () {
     // If this asteroid is being imploded, ignore collision
     if (this.implosionState) return;
     
-    SFX.explosion();
+    if (SFX.asteroidExplosion) {
+      SFX.asteroidExplosion();
+    }
     
     // Check if Similarity Mode should trigger chain destruction
     if (window.SimilarityMode && SimilarityMode.isActive() && this.similarityGroup && !SimilarityMode.isChainTriggered()) {
