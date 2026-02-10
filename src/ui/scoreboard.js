@@ -532,6 +532,21 @@ var Scoreboard = (function() {
     prompt = document.createElement('div');
     prompt.className = 'prompt-pill scoreboard-cta';
     prompt.textContent = 'Press Start to Play';
+    prompt.setAttribute('role', 'button');
+    prompt.setAttribute('tabindex', '0');
+
+    var triggerStart = function() {
+      if (window.Game && window.Game.FSM && Game.FSM.state === 'waiting') {
+        window.gameStart = true;
+      }
+    };
+
+    prompt.addEventListener('click', function(e) {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      triggerStart();
+      return false;
+    });
 
     panel.appendChild(table);
     panel.appendChild(indicator);

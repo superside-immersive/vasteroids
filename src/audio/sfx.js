@@ -27,7 +27,7 @@ var SFX = {
   nameAcceptAudio:    new Audio('assets/audio/name_accept.wav'),
   menuSelectAudio:    new Audio('assets/audio/menu_select.wav'),
   gameStartAudio:     new Audio('assets/audio/game_start.wav'),
-  shieldHumAudio:     new Audio('assets/audio/shield_hum.wav'),
+  shieldHumAudio:     null,
   chainImplosionAudio: new Audio('assets/audio/chain_implosion.wav'),
   
   // Shield hum loop control
@@ -53,7 +53,7 @@ var SFX = {
     nameAcceptAudio: 'assets/audio/name_accept.wav',
     menuSelectAudio: 'assets/audio/menu_select.wav',
     gameStartAudio: 'assets/audio/game_start.wav',
-    shieldHumAudio: 'assets/audio/shield_hum.wav',
+    shieldHumAudio: null,
     chainImplosionAudio: 'assets/audio/chain_implosion.wav'
   },
   _soundMeta: {
@@ -259,8 +259,10 @@ SFX.badgeUnlock = function() {
 
 SFX.startShieldHum = function() {
   if (SFX.muted || SFX._shieldHumPlaying) return;
+  var src = SFX._soundSources.shieldHumAudio;
+  if (!src) return; // No shield hum sound file available
   try {
-    var audio = new Audio(SFX._soundSources.shieldHumAudio || 'assets/audio/shield_hum.wav');
+    var audio = new Audio(src);
     audio.loop = true;
     audio.volume = 0.35;
     audio.play().catch(function(){});
@@ -292,3 +294,4 @@ SFX.setSound = function(key, url) {
     return false;
   }
 };
+

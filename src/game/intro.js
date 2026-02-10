@@ -274,6 +274,12 @@ var IntroManager = {
       });
 
     this.state.timeline.finished.then(function() {
+      // Ensure game start is triggered even if the timeline finishes
+      // before the elapsed-time check in render() fires
+      if (!self.state.gameTriggered) {
+        self.state.gameTriggered = true;
+        Game.skipWaiting = true;
+      }
       self.state.done = true;
     });
   },

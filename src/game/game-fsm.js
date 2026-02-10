@@ -34,8 +34,27 @@ var GameFSM = {
     if (window.GameOverUI) {
       GameOverUI.hide();
     }
-    // Ensure intro is ready each time we land in waiting
-    if (window.IntroManager && IntroManager.state && IntroManager.state.done) {
+
+    // --- CHECK TRANSITION FIRST (before any reset!) ---
+    // Intro signals when to begin the game.
+    if (this._startRequested && Game.skipWaiting) {
+      Game.skipWaiting = false;
+      this._startRequested = false;
+
+      // Prevent a one-frame flash of the "waiting" asteroids/UFO when we switch out of waiting.
+      for (var i = 0; i < Game.sprites.length; i++) {
+        var s = Game.sprites[i];
+        if (s && (s.name === 'asteroid' || s.name === 'bigalien' || s.name === 'alienbullet')) {
+          s.visible = false;
+        }
+      }
+
+      this.state = 'start';
+      return;
+    }
+
+    // Ensure intro is ready each time we land in waiting (only when idle, not during a start sequence)
+    if (!this._startRequested && window.IntroManager && IntroManager.state && IntroManager.state.done) {
       IntroManager.reset();
       Game.skipWaiting = false;
     }
@@ -72,22 +91,6 @@ var GameFSM = {
         IntroManager.reset();
         IntroManager.requestPlay();
       }
-    }
-
-    // Intro signals when to begin the game.
-    if (this._startRequested && Game.skipWaiting) {
-      Game.skipWaiting = false;
-      this._startRequested = false;
-
-      // Prevent a one-frame flash of the "waiting" asteroids/UFO when we switch out of waiting.
-      for (var i = 0; i < Game.sprites.length; i++) {
-        var s = Game.sprites[i];
-        if (s && (s.name === 'asteroid' || s.name === 'bigalien' || s.name === 'alienbullet')) {
-          s.visible = false;
-        }
-      }
-
-      this.state = 'start';
     }
   },
 

@@ -328,6 +328,7 @@
   letter-spacing: 1px;
   border-radius: 10px;
   background: transparent;
+  cursor: pointer;
   box-shadow:
     0 0 0 1px rgba(31, 217, 254, 0.15),
     0 0 12px rgba(31, 217, 254, 0.15);

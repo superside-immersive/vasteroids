@@ -280,7 +280,7 @@ var Asteroid = function () {
       this._drawHitbox(ctx);
     }
 
-    // Ultra-optimized character rendering using cached sprites
+    // Character rendering using cached sprites
     this._drawCharacters(ctx);
 
     // Draw outline for fragments

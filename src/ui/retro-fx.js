@@ -11,7 +11,6 @@
 
   var RetroFX = {
     enabled: false,
-    perfMode: false,
 
     _w: 0,
     _h: 0,
@@ -56,9 +55,6 @@
       this.enabled = !!enabled;
     },
 
-    setPerfMode: function (enabled) {
-      this.perfMode = !!enabled;
-    },
 
     _refreshNoise: function () {
       if (!this._noiseCtx) return;
@@ -165,7 +161,7 @@
       if (!this._noiseCanvas) return;
 
       // Refresh noise every other frame for movement
-      var stride = this.perfMode ? 6 : 2;
+      var stride = 2;
       if ((this._frame % stride) === 0) {
         this._refreshNoise();
       }
@@ -225,10 +221,7 @@
       var t = timeMs || Date.now();
 
       // Order matters: drift first (color fringing), then scanlines, then tracking & noise.
-      // Safari perf mode skips RGB drift because it relies on getImageData/putImageData.
-      if (!this.perfMode) {
-        this._applyRgbDriftOverlay(ctx, sourceCanvas, t);
-      }
+      this._applyRgbDriftOverlay(ctx, sourceCanvas, t);
       this._applyScanlines(ctx, t);
       this._applyTrackingBars(ctx, t);
       this._applyNoise(ctx, t);

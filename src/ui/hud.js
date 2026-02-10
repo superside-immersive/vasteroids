@@ -32,7 +32,7 @@ var HUD = (function() {
     bar.className = 'hud-bar';
 
     scoreNode = document.createElement('div');
-    scoreNode.className = 'hud-chip hud-score text-glow';
+    scoreNode.className = 'hud-chip hud-score';
     scoreNode.textContent = 'SCORE 0';
 
     achievementBadge = document.createElement('div');
@@ -122,7 +122,6 @@ var HUD = (function() {
     lastScore = score;
     if (!scoreNode) return;
     scoreNode.textContent = 'SCORE ' + score;
-    Animations.pulse(scoreNode, { duration: 360 });
   }
 
   function updateLives(lives) {

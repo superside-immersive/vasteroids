@@ -43,30 +43,6 @@ $(function () {
   var canvasNode = canvas[0];
   var gameContainer = document.getElementById('game-container');
 
-  // Safari-only perf mode: avoid effects that are known to be expensive in WebKit.
-  // Chrome behavior/visuals remain unchanged.
-  function isProbablySafari() {
-    var ua = navigator.userAgent || '';
-    var vendor = navigator.vendor || '';
-    if (vendor !== 'Apple Computer, Inc.') return false;
-    if (ua.indexOf('Safari/') === -1) return false;
-    // Exclude other browsers (even if WebKit-based on iOS) to avoid changing "Chrome" behavior.
-    if (/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/.test(ua)) return false;
-    return true;
-  }
-
-  var safariPerfEnabled = isProbablySafari();
-  try {
-    // Override knob (no UI): localStorage.safariPerf = '1' (force on) or '0' (force off)
-    var override = localStorage.getItem('safariPerf');
-    if (override === '1') safariPerfEnabled = true;
-    if (override === '0') safariPerfEnabled = false;
-  } catch (e) {}
-
-  if (safariPerfEnabled) {
-    document.documentElement.classList.add('safari-perf');
-  }
-
   // Retro TV post-process toggle (scanlines/noise/RGB drift/tracking)
   var retroEnabled = false;
   (function initRetroToggle() {
@@ -79,9 +55,6 @@ $(function () {
     if (window.RetroFX && typeof RetroFX.init === 'function') {
       RetroFX.init(Game.canvasWidth, Game.canvasHeight);
       RetroFX.setEnabled(retroEnabled);
-      if (typeof RetroFX.setPerfMode === 'function') {
-        RetroFX.setPerfMode(safariPerfEnabled);
-      }
     }
 
     var btn = document.getElementById('toggle-retro-tv');
@@ -97,9 +70,6 @@ $(function () {
         retroEnabled = !retroEnabled;
         if (window.RetroFX && typeof RetroFX.setEnabled === 'function') {
           RetroFX.setEnabled(retroEnabled);
-          if (typeof RetroFX.setPerfMode === 'function') {
-            RetroFX.setPerfMode(safariPerfEnabled);
-          }
         }
         try {
           localStorage.setItem('retroTvEnabled', retroEnabled ? '1' : '0');
@@ -114,8 +84,7 @@ $(function () {
   glowCanvas.width = Game.canvasWidth;
   glowCanvas.height = Game.canvasHeight;
   var glowCtx = glowCanvas.getContext('2d');
-  // Safari perf mode disables bloom (canvas blur filter is a common WebKit perf cliff)
-  var bloomEnabled = !safariPerfEnabled;
+  var bloomEnabled = true;
 
   // FPS display (bottom debug area)
   var fpsEnabled = false;
@@ -123,11 +92,12 @@ $(function () {
   var fpsReadout = null;
 
   (function initFpsUi() {
+    // FPS enabled by default; user can toggle off and preference is remembered
+    fpsEnabled = true;
     try {
-      fpsEnabled = localStorage.getItem('fpsEnabled') === '1';
-    } catch (e) {
-      fpsEnabled = false;
-    }
+      var stored = localStorage.getItem('fpsEnabled');
+      if (stored !== null) fpsEnabled = stored === '1';
+    } catch (e) {}
 
     fpsBtn = document.getElementById('toggle-fps');
     fpsReadout = document.getElementById('fps-readout');
@@ -408,8 +378,6 @@ $(function () {
       RetroFX.apply(context, canvasNode, thisFrame);
     }
 
-    // (framerate display removed)
-
     // Update framerate counter
     frameCount++;
     elapsedCounter += elapsed;
@@ -423,6 +391,24 @@ $(function () {
       if (fpsEnabled && fpsReadout) {
         fpsReadout.textContent = 'FPS: ' + avgFramerate;
       }
+    }
+
+    // On-canvas FPS overlay (top-right corner, always visible when enabled)
+    if (fpsEnabled && avgFramerate > 0) {
+      context.save();
+      var fpsText = avgFramerate + ' FPS';
+      var fpsColor = avgFramerate >= 55 ? '#00ff88' : avgFramerate >= 30 ? '#ffcc00' : '#ff3333';
+      context.font = 'bold 14px monospace';
+      context.textAlign = 'right';
+      context.textBaseline = 'top';
+      // Background pill for readability
+      var tw = context.measureText(fpsText).width;
+      context.fillStyle = 'rgba(0,0,0,0.55)';
+      context.fillRect(Game.canvasWidth - tw - 18, 8, tw + 12, 22);
+      // FPS text
+      context.fillStyle = fpsColor;
+      context.fillText(fpsText, Game.canvasWidth - 12, 12);
+      context.restore();
     }
 
     // Continue loop or show pause
@@ -551,7 +537,6 @@ $(function () {
       
       ctx.beginPath();
       ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-      ctx.fillStyle = p.color.replace(')', ', ' + alpha + ')').replace('rgb', 'rgba').replace('#', '');
       
       // Convert hex to rgba
       var hex = p.color;
@@ -561,7 +546,6 @@ $(function () {
       ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
       ctx.fill();
       
-      // Glow effect
       ctx.shadowColor = p.color;
       ctx.shadowBlur = 10 * alpha;
     }
