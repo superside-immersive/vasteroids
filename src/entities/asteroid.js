@@ -349,8 +349,6 @@ var Asteroid = function () {
     var isFinalFragment = this.charCount < GAME_CONFIG.asteroid.minSplitChars;
 
     ctx.save();
-    ctx.translate(this.x, this.y);
-
     // Slight rotation wobble for visual interest
     var wobble = Math.sin(this.time * 1.5) * 0.03;
     ctx.rotate(wobble);
@@ -410,8 +408,6 @@ var Asteroid = function () {
     if (this._spawnCharLimit != null) {
       len = Math.min(len, this._spawnCharLimit);
     }
-    var x0 = this.x;
-    var y0 = this.y;
     
     // Apply compression scale during implosion
     var compressionScale = this.compressionScale || 1;
@@ -497,22 +493,23 @@ var Asteroid = function () {
       ctx.globalAlpha = Math.min(1, Math.max(minAlpha, alpha));
       
       // Calculate position with vibration
-      var drawX = x0 + sc.x;
-      var drawY = y0 + sc.y;
+      var drawX = sc.x;
+      var drawY = sc.y;
       
       if (vibrationIntensity > 0) {
         drawX += (Math.random() - 0.5) * vibrationIntensity * 3;
         drawY += (Math.random() - 0.5) * vibrationIntensity * 3;
       }
       
-      // Draw cached sprite with rotation
-      var cos = Math.cos(c.rot) * drawScale;
-      var sin = Math.sin(c.rot) * drawScale;
-      ctx.setTransform(cos, sin, -sin, cos, drawX, drawY);
+      // Draw cached sprite with local transform (keeps parent/world zoom active)
+      ctx.save();
+      ctx.translate(drawX, drawY);
+      ctx.rotate(c.rot);
+      ctx.scale(drawScale, drawScale);
       ctx.drawImage(getCharSprite(c.char, similarityColor), -halfSprite, -halfSprite);
+      ctx.restore();
     }
-    
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
     ctx.globalAlpha = 1;
   };
 
@@ -581,6 +578,27 @@ var Asteroid = function () {
       if (Game.stats) {
         Game.stats.asteroidsDestroyed++;
         Game.stats.asteroidsScore += asteroidScore;
+      }
+    }
+
+    // ——— JUICE: asteroid hit feedback ———
+    if (window.Juice) {
+      // Scale shake by asteroid size — bigger asteroid = bigger punch
+      var sizeRatio = Math.min(1, this.charCount / 200);
+      var inSimilarity = window.SimilarityMode && SimilarityMode.isActive();
+      // EARTHQUAKE shake during similarity mode
+      var shakeBase = inSimilarity ? 14 : 3;
+      var shakeScale = inSimilarity ? 22 : 6;
+      var traumaBase = inSimilarity ? 0.55 : 0.15;
+      var traumaScale = inSimilarity ? 0.65 : 0.2;
+      Juice.shake(shakeBase + sizeRatio * shakeScale, traumaBase + sizeRatio * traumaScale);
+      if (inSimilarity) {
+        Juice.chromatic(6 + sizeRatio * 8);
+        Juice.hitstop(1); // micro-freeze every similarity kill
+      }
+      if (this.charCount < GAME_CONFIG.asteroid.minSplitChars) {
+        // Final kill — extra pop
+        Juice.hitstop(inSimilarity ? 4 : 2);
       }
     }
 

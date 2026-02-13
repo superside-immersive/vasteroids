@@ -119,9 +119,20 @@ var HUD = (function() {
 
   function updateScore(score) {
     if (score === lastScore) return;
+    var delta = score - (lastScore || 0);
     lastScore = score;
     if (!scoreNode) return;
     scoreNode.textContent = 'SCORE ' + score;
+
+    // Juicy pulse on big score jumps
+    if (delta >= 500) {
+      scoreNode.style.transition = 'transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.6)';
+      scoreNode.style.transform = 'scale(1.18)';
+      setTimeout(function() {
+        scoreNode.style.transition = 'transform 0.3s ease-out';
+        scoreNode.style.transform = 'scale(1)';
+      }, 130);
+    }
   }
 
   function updateLives(lives) {
@@ -134,17 +145,70 @@ var HUD = (function() {
   
   function updateWave(wave) {
     if (wave === lastWave) return;
+    var isNewWave = lastWave !== null && wave > lastWave;
     lastWave = wave;
     if (!waveNode) return;
     waveNode.textContent = 'WAVE ' + wave;
+
+    // Juicy bump on wave change
+    if (isNewWave) {
+      waveNode.style.transition = 'transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.6)';
+      waveNode.style.transform = 'scale(1.22)';
+      setTimeout(function() {
+        waveNode.style.transition = 'transform 0.35s ease-out';
+        waveNode.style.transform = 'scale(1)';
+      }, 160);
+
+      // Show a big centered wave banner
+      showWaveBanner(wave);
+    }
+  }
+
+  function showWaveBanner(wave) {
+    if (!container) return;
+    var banner = document.createElement('div');
+    banner.className = 'wave-banner';
+    banner.textContent = 'WAVE ' + wave;
+    banner.style.cssText = 'position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) scale(0.5);' +
+      'font-family:\"Orbitron\",\"Audiowide\",monospace;font-size:48px;font-weight:bold;letter-spacing:6px;' +
+      'color:#FFBC42;text-shadow:0 0 20px rgba(255,188,66,0.8),0 0 40px rgba(255,188,66,0.4);' +
+      'pointer-events:none;z-index:1100;opacity:0;' +
+      'transition:transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275),opacity 0.25s ease-out;';
+    container.appendChild(banner);
+
+    requestAnimationFrame(function() {
+      banner.style.opacity = '1';
+      banner.style.transform = 'translate(-50%,-50%) scale(1)';
+
+      setTimeout(function() {
+        banner.style.transition = 'transform 0.8s ease-in, opacity 0.6s ease-in';
+        banner.style.transform = 'translate(-50%,-50%) scale(1.3)';
+        banner.style.opacity = '0';
+      }, 900);
+
+      setTimeout(function() {
+        if (banner.parentNode) banner.parentNode.removeChild(banner);
+      }, 1800);
+    });
   }
   
   function updateHyperspace(jumps) {
     if (jumps === lastHyperspace) return;
+    var wasHigher = lastHyperspace !== null && jumps < lastHyperspace;
     lastHyperspace = jumps;
     if (!hyperspaceNode) return;
     hyperspaceNode.textContent = 'JUMP ×' + Math.max(0, jumps);
     hyperspaceNode.style.opacity = jumps > 0 ? '1' : '0.4';
+
+    // Shake chip when a jump is used
+    if (wasHigher) {
+      hyperspaceNode.style.transition = 'transform 0.1s ease';
+      hyperspaceNode.style.transform = 'scale(1.15) rotate(-3deg)';
+      setTimeout(function() {
+        hyperspaceNode.style.transition = 'transform 0.3s ease-out';
+        hyperspaceNode.style.transform = 'scale(1) rotate(0deg)';
+      }, 110);
+    }
   }
 
   function updateAchievementBadge() {
@@ -255,23 +319,30 @@ var HUD = (function() {
     floater.style.position = 'absolute';
     floater.style.left = x + 'px';
     floater.style.top = y + 'px';
-    floater.style.transform = 'translate(-50%, -50%)';
+    floater.style.transform = 'translate(-50%, -50%) scale(0.3)';
     floater.style.color = '#00FF00';
-    floater.style.fontSize = '24px';
+    floater.style.fontSize = '28px';
     floater.style.fontWeight = 'bold';
-    floater.style.fontFamily = 'monospace';
-    floater.style.textShadow = '0 0 10px #00FF00, 0 0 20px #00FF00';
+    floater.style.fontFamily = "'Orbitron', 'Audiowide', monospace";
+    floater.style.textShadow = '0 0 12px #00FF00, 0 0 24px #00FF00';
     floater.style.pointerEvents = 'none';
     floater.style.zIndex = '1000';
-    floater.style.opacity = '1';
-    floater.style.transition = 'transform 1.5s ease-out, opacity 1.5s ease-out';
+    floater.style.opacity = '0';
+    floater.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.6), opacity 0.15s ease-out';
     
     container.appendChild(floater);
     
-    // Trigger animation
+    // Phase 1: scale-in with overshoot
     requestAnimationFrame(function() {
-      floater.style.transform = 'translate(-50%, -150%)';
-      floater.style.opacity = '0';
+      floater.style.opacity = '0.95';
+      floater.style.transform = 'translate(-50%, -50%) scale(1.1)';
+
+      // Phase 2: settle + float up and fade
+      setTimeout(function() {
+        floater.style.transition = 'transform 1.4s ease-out, opacity 1.2s ease-in';
+        floater.style.transform = 'translate(-50%, -200%) scale(0.8)';
+        floater.style.opacity = '0';
+      }, 280);
     });
     
     // Remove after animation
@@ -279,7 +350,7 @@ var HUD = (function() {
       if (floater.parentNode) {
         floater.parentNode.removeChild(floater);
       }
-    }, 1600);
+    }, 1800);
   }
 
   function showAchievementToast(text) {
@@ -299,7 +370,7 @@ var HUD = (function() {
     floater.style.textShadow = '0 0 10px rgba(255, 213, 106, 0.9), 0 0 20px rgba(255, 213, 106, 0.6)';
     floater.style.pointerEvents = 'none';
     floater.style.zIndex = '1000';
-    floater.style.opacity = '1';
+    floater.style.opacity = '0.92';
     floater.style.transition = 'transform 1.6s ease-out, opacity 1.6s ease-out';
 
     container.appendChild(floater);
@@ -343,7 +414,7 @@ var HUD = (function() {
     }
     floater.style.pointerEvents = 'none';
     floater.style.zIndex = '1000';
-    floater.style.opacity = '1';
+    floater.style.opacity = '0.92';
     floater.style.transition = 'transform 2s ease-out, opacity 2s ease-out';
 
     target.appendChild(floater);
@@ -360,19 +431,22 @@ var HUD = (function() {
     }, 2100);
   }
 
-  function showDASELogo() {
+  function showDASELogo(options) {
     if (window.LevelTransitionManager && typeof LevelTransitionManager.isActive === 'function' && LevelTransitionManager.isActive()) {
       return;
     }
+    options = options || {};
+    var topPercent = typeof options.topPercent === 'number' ? options.topPercent : 50;
+    var holdMs = typeof options.holdMs === 'number' ? options.holdMs : 1500;
     var target = container || document.body;
     var logoDiv = document.createElement('div');
     logoDiv.className = 'dase-logo-popup';
     logoDiv.style.position = 'absolute';
     logoDiv.style.left = '50%';
-    logoDiv.style.top = '50%';
+    logoDiv.style.top = topPercent + '%';
     logoDiv.style.transform = 'translate(-50%, -50%) scale(0.5)';
     logoDiv.style.pointerEvents = 'none';
-    logoDiv.style.zIndex = '1000';
+    logoDiv.style.zIndex = '2400';
     logoDiv.style.opacity = '0';
     logoDiv.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-out';
 
@@ -389,7 +463,7 @@ var HUD = (function() {
 
     // Animate in
     requestAnimationFrame(function() {
-      logoDiv.style.opacity = '1';
+      logoDiv.style.opacity = '0.9';
       logoDiv.style.transform = 'translate(-50%, -50%) scale(1)';
     });
 
@@ -397,14 +471,176 @@ var HUD = (function() {
     setTimeout(function() {
       logoDiv.style.opacity = '0';
       logoDiv.style.transform = 'translate(-50%, -50%) scale(1.2)';
-    }, 1500);
+    }, holdMs);
 
     // Remove from DOM
     setTimeout(function() {
       if (logoDiv.parentNode) {
         logoDiv.parentNode.removeChild(logoDiv);
       }
-    }, 2000);
+    }, holdMs + 500);
+  }
+
+  var tutorialCard = null;
+  var tutorialCardTimer = null;
+  var tutorialCardLine = null;
+  var tutorialCardDot = null;
+  var tutorialCardLineRaf = null;
+  var tutorialCardTargetResolver = null;
+
+  function clearTutorialPointerLine() {
+    if (tutorialCardLineRaf) {
+      cancelAnimationFrame(tutorialCardLineRaf);
+      tutorialCardLineRaf = null;
+    }
+    tutorialCardTargetResolver = null;
+    if (tutorialCardLine && tutorialCardLine.parentNode) {
+      tutorialCardLine.parentNode.removeChild(tutorialCardLine);
+    }
+    tutorialCardLine = null;
+    if (tutorialCardDot && tutorialCardDot.parentNode) {
+      tutorialCardDot.parentNode.removeChild(tutorialCardDot);
+    }
+    tutorialCardDot = null;
+  }
+
+  function updateTutorialPointerLine() {
+    if (!tutorialCard || typeof tutorialCardTargetResolver !== 'function') {
+      tutorialCardLineRaf = null;
+      return;
+    }
+
+    var targetPos = tutorialCardTargetResolver();
+    if (!targetPos || typeof targetPos.x !== 'number' || typeof targetPos.y !== 'number') {
+      if (tutorialCardLine) tutorialCardLine.style.opacity = '0';
+      if (tutorialCardDot) tutorialCardDot.style.opacity = '0';
+      tutorialCardLineRaf = requestAnimationFrame(updateTutorialPointerLine);
+      return;
+    }
+
+    // Dynamically position card above the target object
+    var containerHeight = (container || document.body).offsetHeight || 540;
+    var containerWidth = (container || document.body).offsetWidth || 960;
+    var cardHeight = tutorialCard.offsetHeight || 50;
+    var cardOffset = 70; // px gap between card bottom and target
+    var cardTop = targetPos.y - cardHeight - cardOffset;
+    // If card would go off-screen top, put it below instead
+    var cardBelow = false;
+    if (cardTop < 20) {
+      cardTop = targetPos.y + cardOffset;
+      cardBelow = true;
+    }
+    // Clamp within container
+    cardTop = Math.max(10, Math.min(containerHeight - cardHeight - 10, cardTop));
+    tutorialCard.style.top = cardTop + 'px';
+    // Also adjust horizontal to follow target (clamped to stay mostly centered)
+    var cardLeft = Math.max(containerWidth * 0.18, Math.min(containerWidth * 0.82, targetPos.x));
+    tutorialCard.style.left = cardLeft + 'px';
+
+    // Draw pointer line from card edge to target
+    if (tutorialCardLine) {
+      var cardRect = tutorialCard.getBoundingClientRect();
+      var containerRect = (container || document.body).getBoundingClientRect();
+      var startX = (cardRect.left + cardRect.width / 2) - containerRect.left;
+      var startY = cardBelow
+        ? cardRect.top - containerRect.top - 2
+        : cardRect.bottom - containerRect.top + 2;
+      var endX = targetPos.x;
+      var endY = targetPos.y;
+
+      var dx = endX - startX;
+      var dy = endY - startY;
+      var length = Math.sqrt(dx * dx + dy * dy);
+
+      tutorialCardLine.style.left = startX + 'px';
+      tutorialCardLine.style.top = startY + 'px';
+      tutorialCardLine.style.width = Math.max(0, length) + 'px';
+      tutorialCardLine.style.transform = 'rotate(' + Math.atan2(dy, dx) + 'rad)';
+      tutorialCardLine.style.opacity = length > 8 ? '0.92' : '0';
+
+      if (tutorialCardDot) {
+        tutorialCardDot.style.left = endX + 'px';
+        tutorialCardDot.style.top = endY + 'px';
+        tutorialCardDot.style.opacity = length > 8 ? '0.9' : '0';
+      }
+    }
+
+    tutorialCardLineRaf = requestAnimationFrame(updateTutorialPointerLine);
+  }
+
+  function clearTutorialCard() {
+    clearTutorialPointerLine();
+    if (tutorialCardTimer) {
+      clearTimeout(tutorialCardTimer);
+      tutorialCardTimer = null;
+    }
+    if (tutorialCard && tutorialCard.parentNode) {
+      tutorialCard.parentNode.removeChild(tutorialCard);
+    }
+    tutorialCard = null;
+  }
+
+  function showTutorialCard(lines, options) {
+    var target = container || document.body;
+    if (!target) return;
+
+    options = options || {};
+    var duration = typeof options.duration === 'number' ? options.duration : 2600;
+    var topPercent = typeof options.topPercent === 'number' ? options.topPercent : 30;
+    var accent = options.accent || '#1FD9FE';
+    tutorialCardTargetResolver = typeof options.targetResolver === 'function' ? options.targetResolver : null;
+    var normalized = [];
+
+    if (typeof lines === 'string') {
+      normalized = [lines];
+    } else if (lines && lines.length) {
+      normalized = lines.slice(0, 2);
+    }
+    if (!normalized.length) return;
+
+    clearTutorialCard();
+
+    var card = document.createElement('div');
+    card.className = 'tutorial-card';
+    card.style.top = topPercent + '%';
+    card.style.setProperty('--tutorial-accent', accent);
+
+    for (var i = 0; i < normalized.length; i++) {
+      var line = document.createElement('div');
+      line.className = 'tutorial-card-line';
+      line.textContent = normalized[i];
+      card.appendChild(line);
+    }
+
+    target.appendChild(card);
+    tutorialCard = card;
+
+    if (tutorialCardTargetResolver) {
+      var pointer = document.createElement('div');
+      pointer.className = 'tutorial-card-pointer-line';
+      pointer.style.setProperty('--tutorial-accent', accent);
+      target.appendChild(pointer);
+      tutorialCardLine = pointer;
+
+      var dot = document.createElement('div');
+      dot.className = 'tutorial-card-pointer-dot';
+      dot.style.setProperty('--tutorial-accent', accent);
+      target.appendChild(dot);
+      tutorialCardDot = dot;
+
+      tutorialCardLineRaf = requestAnimationFrame(updateTutorialPointerLine);
+    }
+
+    requestAnimationFrame(function() {
+      if (!tutorialCard) return;
+      tutorialCard.classList.add('visible');
+    });
+
+    tutorialCardTimer = setTimeout(function() {
+      if (!tutorialCard) return;
+      tutorialCard.classList.remove('visible');
+      setTimeout(clearTutorialCard, 280);
+    }, duration);
   }
 
   var instructionBillboard = null;
@@ -492,6 +728,8 @@ var HUD = (function() {
     showAchievementToast: showAchievementToast,
     showAchievementEmoji: showAchievementEmoji,
     showDASELogo: showDASELogo,
-    showInstructionBillboard: showInstructionBillboard
+    showInstructionBillboard: showInstructionBillboard,
+    showTutorialCard: showTutorialCard,
+    clearTutorialCard: clearTutorialCard
   };
 })();

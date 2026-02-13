@@ -104,6 +104,17 @@ var SimilarityPickup = function() {
         SimilarityMode.activate();
         SFX.similarityActivate();
       }
+      // ——— JUICE: similarity pickup collected ———
+      if (window.Juice) {
+        Juice.flash('#AD7CFF', 0.35, 0.04);  // purple flash
+        Juice.shake(10, 0.5);                 // medium shake
+        Juice.chromatic(5);                    // chromatic pulse
+        Juice.hitstop(3);                      // brief freeze
+      }
+      // Spawn radial burst particles from pickup position
+      if (window.Game) {
+        Game.shockwaveAt(this.x, this.y, 60, '#AD7CFF');
+      }
       this.die();
     }
   };
@@ -127,6 +138,10 @@ function spawnSimilarityPickup(x, y) {
   
   if (window.SimilarityMode) {
     SimilarityMode.incrementDrops();
+  }
+
+  if (window.GameCinematics && typeof GameCinematics.onSimilarityPickupSpawn === 'function') {
+    GameCinematics.onSimilarityPickupSpawn(pickup);
   }
   
   return pickup;

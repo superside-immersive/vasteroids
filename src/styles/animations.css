@@ -354,3 +354,62 @@
     text-shadow: 0 0 20px #FFBC42, 0 0 40px #FFBC42, 0 0 60px #FFBC42;
   }
 }
+
+/* ==========================================================================
+   JUICE — GAME-FEEL ANIMATIONS
+   ========================================================================== */
+
+/**
+ * HUD Chip Pop
+ * Quick bounce-scale for score/wave/hyperspace chip updates
+ * Duration: 0.3s | Timing: ease-out
+ */
+@keyframes hudChipPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/**
+ * Wave Banner In
+ * Large centered "WAVE X" title entrance with overshoot
+ * Duration: 0.35s | Timing: cubic-bezier overshoot
+ */
+@keyframes waveBannerIn {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  60%  { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/**
+ * Wave Banner Out
+ * Scale-up + fade for wave banner exit
+ * Duration: 0.7s | Timing: ease-in
+ */
+@keyframes waveBannerOut {
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+}
+
+/**
+ * Floating Text Pop
+ * Bounce-in for combo/chain floating text
+ * Duration: 0.25s | Timing: ease-out overshoot
+ */
+@keyframes floatTextPop {
+  0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+  70%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.95; }
+}
+
+/**
+ * Pickup Collect Burst
+ * Radial scale burst for power-up collection
+ * Duration: 0.4s | Timing: ease-out
+ */
+@keyframes collectBurst {
+  0%   { transform: scale(0); opacity: 0.8; }
+  50%  { transform: scale(1.5); opacity: 0.4; }
+  100% { transform: scale(2.5); opacity: 0; }
+}

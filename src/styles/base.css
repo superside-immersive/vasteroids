@@ -96,7 +96,8 @@ html.safari-perf .qr-scanner-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 20;
+  z-index: 2200;
+  opacity: 0.93;
   color: var(--ui-text);
   text-align: center;
   font-family: 'Orbitron', 'Audiowide', 'Courier New', monospace;
@@ -104,7 +105,7 @@ html.safari-perf .qr-scanner-overlay {
 
 .ui-overlay.interactive {
   pointer-events: auto;
-  z-index: 30;
+  z-index: 2300;
 }
 
 /* ==========================================================================
@@ -123,6 +124,7 @@ html.safari-perf .qr-scanner-overlay {
   background: var(--ui-panel);
   border: 1px solid var(--ui-border);
   box-shadow: var(--ui-glow);
+  opacity: 0.94;
   padding: 18px 22px;
   border-radius: 10px;
   min-width: 320px;

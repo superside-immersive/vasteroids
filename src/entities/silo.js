@@ -243,11 +243,24 @@ var Silo = function() {
       this.health--;
       this.hitFlashTimer = 10;
       SFX.explosion();
+
+      // ——— JUICE: silo hit ———
+      if (window.Juice) {
+        Juice.shake(4, 0.12);
+      }
       
       if (this.health <= 0) {
         // Destroyed - give rewards
         Game.score += this.scoreValue;
         Game.explosionAt(this.x, this.y);
+
+        // ——— JUICE: silo destroyed (mini-boss kill) ———
+        if (window.Juice) {
+          Juice.shake(14, 0.6);
+          Juice.flash('#FFBC42', 0.35, 0.035);
+          Juice.chromatic(6);
+          Juice.hitstop(4);
+        }
         
         // Track stats
         if (Game.stats) {
@@ -267,11 +280,6 @@ var Silo = function() {
         if (window.DASEMode && DASEMode.beamSevered) {
           DASEMode.restoreBeam();
           SFX.beamRestored();
-        }
-        
-        // GUARANTEED Similarity drop from Silo (max 2 per game)
-        if (window.SimilarityMode && SimilarityMode.getDropsUsed() < 2) {
-          spawnSimilarityPickup(this.x, this.y);
         }
         
         // Notify DASE system

@@ -29,6 +29,7 @@ var DASEMode = (function() {
   var silosSpawnedThisDASE = 0;
   var siloKillTime = 0;
   var maxSilosPerDASE = 2;
+  var firstActivationSeen = false;
   
   // Turret reference
   var turret = null;
@@ -71,26 +72,41 @@ var DASEMode = (function() {
     this.visible = true;
     this.disabled = false;
     this.targetAngle = 0; // For smooth aiming
+    this.deployProgress = 1;
+    this.deployDuration = 80;
+    this.deployCinematic = false;
+
+    if (Game.ship) {
+      this.x = Game.ship.x;
+      this.y = Game.ship.y;
+    }
   }
-  
-  Turret.prototype.update = function(delta) {
+
+  Turret.prototype.updateOrbitAndDeploy = function(delta) {
     if (!Game.ship || !Game.ship.visible) return;
-    
+
+    var deployT = this.deployProgress;
+    if (deployT < 1) {
+      this.deployProgress = Math.min(1, this.deployProgress + (delta / Math.max(1, this.deployDuration)));
+      deployT = this.deployProgress;
+    }
+    var easedDeploy = 1 - Math.pow(1 - deployT, 3);
+    var liveOrbitRadius = 16 + (this.orbitRadius - 16) * easedDeploy;
+
     // Orbit around ship - but smoothly follow if ship moves fast
     this.orbitAngle += this.orbitSpeed * delta;
-    
+
     // Calculate target position on orbit
-    var targetX = Game.ship.x + Math.cos(this.orbitAngle) * this.orbitRadius;
-    var targetY = Game.ship.y + Math.sin(this.orbitAngle) * this.orbitRadius;
-    
+    var targetX = Game.ship.x + Math.cos(this.orbitAngle) * liveOrbitRadius;
+    var targetY = Game.ship.y + Math.sin(this.orbitAngle) * liveOrbitRadius;
+
     // Smooth follow - turret catches up to target position
-    // This prevents cable from stretching when ship moves fast
     var followSpeed = 0.3;
     this.x += (targetX - this.x) * followSpeed;
     this.y += (targetY - this.y) * followSpeed;
-    
+
     // If too far from ship, snap closer (max cable length)
-    var maxDist = this.orbitRadius * 1.2;
+    var maxDist = liveOrbitRadius * 1.2;
     var dx = this.x - Game.ship.x;
     var dy = this.y - Game.ship.y;
     var dist = Math.sqrt(dx * dx + dy * dy);
@@ -99,9 +115,21 @@ var DASEMode = (function() {
       this.x = Game.ship.x + dx * scale;
       this.y = Game.ship.y + dy * scale;
     }
+  };
+
+  Turret.prototype.updateCinematicDeploy = function(delta) {
+    this.updateOrbitAndDeploy(delta);
+    if (this.deployProgress >= 1) {
+      this.fireTimer = 0;
+    }
+  };
+  
+  Turret.prototype.update = function(delta) {
+    if (!Game.ship || !Game.ship.visible) return;
+    this.updateOrbitAndDeploy(delta);
     
     // Auto-fire at nearest target (if not disabled)
-    if (!this.disabled) {
+    if (!this.disabled && this.deployProgress >= 1) {
       this.fireTimer -= delta;
       if (this.fireTimer <= 0) {
         this.fireAtNearestTarget();
@@ -168,10 +196,17 @@ var DASEMode = (function() {
   
   Turret.prototype.draw = function(ctx) {
     if (!this.visible) return;
+
+    var deployT = this.deployProgress;
+    var easedDeploy = 1 - Math.pow(1 - deployT, 3);
+    var deployScale = 0.38 + easedDeploy * 0.62;
+    var deployAlpha = 0.22 + easedDeploy * 0.78;
     
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.orbitAngle);
+    ctx.scale(deployScale, deployScale);
+    ctx.globalAlpha = deployAlpha;
     
     var size = 36;
     
@@ -207,6 +242,18 @@ var DASEMode = (function() {
     }
     
     ctx.restore();
+
+    if (deployT < 1) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = '#1FD9FE';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 26 + (1 - deployT) * 14, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
   };
   
   Turret.prototype.setScaling = function(fragmentCount) {
@@ -280,6 +327,7 @@ var DASEMode = (function() {
       siloKillTime = 0;
       turret = null;
       this.turret = null;
+      firstActivationSeen = false;
     },
     
     /**
@@ -357,12 +405,37 @@ var DASEMode = (function() {
       // Schedule Silo (Latency Drone) spawn - appears later in DASE to give player time
       siloSpawnTimer = 420 + Math.random() * 180; // 7-10 seconds after DASE starts
       
-      // Show DASE logo animation
-      if (window.HUD && HUD.showDASELogo) {
-        HUD.showDASELogo();
+      if (!firstActivationSeen && window.GameCinematics && typeof GameCinematics.onDASEFirstActivate === 'function') {
+        firstActivationSeen = true;
+        GameCinematics.onDASEFirstActivate();
+      } else {
+        // Subsequent activations keep the standard centered popup
+        if (window.HUD && HUD.showDASELogo) {
+          HUD.showDASELogo();
+        }
       }
       
       SFX.daseActivate();
+
+      // ——— JUICE: DASE activation flash + shake ———
+      if (window.Juice) {
+        Juice.flash('#1FD9FE', 0.3, 0.04);    // cyan flash
+        Juice.shake(8, 0.4);                   // medium shake
+        Juice.chromatic(4);                     // subtle chromatic
+      }
+    },
+
+    startCinematicDeploy: function() {
+      if (!turret) return;
+      turret.deployProgress = 0;
+      turret.deployDuration = 90;
+      turret.deployCinematic = true;
+      turret.fireTimer = 0;
+    },
+
+    updateCinematicDeploy: function(delta) {
+      if (!active || !turret || beamSevered) return;
+      turret.updateCinematicDeploy(delta || 1);
     },
     
     /**
@@ -474,7 +547,10 @@ var DASEMode = (function() {
       
       // Draw energy beam (connect to dotted orbit ring, not ship center)
       if (Game.ship && Game.ship.visible) {
-        var ringRadius = Math.max(32, turret.orbitRadius * 0.55);
+        var deployT = turret.deployProgress || 1;
+        var easedDeploy = 1 - Math.pow(1 - deployT, 3);
+        var liveOrbitRadius = 16 + (turret.orbitRadius - 16) * easedDeploy;
+        var ringRadius = Math.max(24, liveOrbitRadius * 0.55);
         var dxRing = turret.x - Game.ship.x;
         var dyRing = turret.y - Game.ship.y;
         var distRing = Math.sqrt(dxRing * dxRing + dyRing * dyRing) || 1;
@@ -505,7 +581,7 @@ var DASEMode = (function() {
         } else {
           // Active beam - solid cyan
           ctx.strokeStyle = '#1FD9FE';
-          ctx.globalAlpha = 0.8;
+          ctx.globalAlpha = 0.35 + 0.45 * easedDeploy;
         }
         
         ctx.lineWidth = 3;
@@ -522,7 +598,7 @@ var DASEMode = (function() {
         // Glow pass
         if (!beamSevered) {
           ctx.strokeStyle = '#1FD9FE';
-          ctx.globalAlpha = 0.3;
+          ctx.globalAlpha = 0.15 + 0.15 * easedDeploy;
           ctx.lineWidth = 8;
           ctx.stroke();
         }

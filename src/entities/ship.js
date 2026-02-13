@@ -339,6 +339,15 @@ var Ship = function () {
     // Collision = lose a life immediately (no shields/upgrades)
     SFX.playerDeath();
     Game.explosionAt(this.x, this.y);
+
+    // ——— JUICE: player death impact ———
+    if (window.Juice) {
+      Juice.shake(22, 0.9);                   // massive screen shake
+      Juice.flash('#D91247', 0.5, 0.03);      // red flash
+      Juice.chromatic(10);                     // heavy chromatic split
+      Juice.hitstop(6);                        // dramatic freeze
+    }
+
     // Drop DASE turret on death
     if (window.DASEMode && typeof DASEMode.isActive === 'function' && DASEMode.isActive()) {
       DASEMode.deactivate();
@@ -350,6 +359,12 @@ var Ship = function () {
     Game.lives--;
     if (Game.lives < 0) {
       SFX.gameOverAlarm();
+      // ——— JUICE: game over slam ———
+      if (window.Juice) {
+        Juice.shake(20, 0.8);
+        Juice.flash('#D91247', 0.5, 0.02);
+        Juice.chromatic(12);
+      }
     }
   };
   
@@ -422,6 +437,13 @@ var Ship = function () {
     
     // Play sound
     SFX.hyperspace();
+
+    // ——— JUICE: hyperspace warp ———
+    if (window.Juice) {
+      Juice.shake(12, 0.5);
+      Juice.flash('#06D69F', 0.25, 0.05);
+      Juice.chromatic(6);
+    }
   };
   
   /**

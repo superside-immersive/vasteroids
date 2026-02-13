@@ -83,6 +83,13 @@ var DataFragment = function() {
       if (window.DASEMode) {
         DASEMode.addFragment(1);
         SFX.fragmentCollect();
+
+        // ——— JUICE: fragment collect pop ———
+        if (window.Juice) {
+          Juice.shake(2, 0.08);
+          Juice.flash('#E86B38', 0.08, 0.1);  // subtle orange flash
+        }
+
         // Track stats
         if (window.Game && window.Game.stats) {
           window.Game.stats.fragmentsCollected++;
@@ -161,5 +168,10 @@ function spawnDataFragment(x, y) {
   fragment.y = y;
   fragment.visible = true;
   Game.sprites.push(fragment);
+
+  if (window.GameCinematics && typeof GameCinematics.onDataFragmentSpawn === 'function') {
+    GameCinematics.onDataFragmentSpawn(fragment);
+  }
+
   return fragment;
 }

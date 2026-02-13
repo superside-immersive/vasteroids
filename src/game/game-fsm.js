@@ -128,6 +128,9 @@ var GameFSM = {
     }
 
     Game.initNewGame();
+    if (window.GameCinematics && typeof GameCinematics.resetRun === 'function') {
+      GameCinematics.resetRun();
+    }
     Game.totalAsteroids = 2;
     Game.spawnAsteroids();
 
@@ -135,6 +138,11 @@ var GameFSM = {
 
     // Play game start sound
     SFX.gameStart();
+
+    // ——— JUICE: game start flash ———
+    if (window.Juice) {
+      Juice.flash('#1FD9FE', 0.2, 0.03);
+    }
     
     this._showInstructionBillboard = true;
     this.state = 'spawn_ship';
@@ -214,6 +222,13 @@ var GameFSM = {
     
     if (!asteroidsExist) {
       SFX.waveComplete();
+
+      // ——— JUICE: wave clear celebration ———
+      if (window.Juice) {
+        Juice.flash('#06D69F', 0.22, 0.025);  // green flash
+        Juice.shake(6, 0.3);
+      }
+
       this.state = 'new_level';
     }
 
@@ -260,12 +275,6 @@ var GameFSM = {
       }
       // Push next UFO spawn a bit so it won't pop in right after transition
       Game.nextBigAlienTime = Date.now() + 12000;
-      
-      // Check for Similarity drop on wave 5
-      if (window.SimilarityMode && SimilarityMode.shouldDropOnWaveClear(Game.currentWave)) {
-        // Spawn near center of screen
-        spawnSimilarityPickup(Game.canvasWidth / 2, Game.canvasHeight / 2);
-      }
       
       // Track wave completion
       if (Game.stats) {

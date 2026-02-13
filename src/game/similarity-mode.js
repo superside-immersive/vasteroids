@@ -170,6 +170,12 @@ var SimilarityMode = (function() {
         Game.score += baseScore;
         chainBonus += baseScore;
         
+        // ——— JUICE: per-asteroid implosion pop ———
+        if (window.Juice) {
+          Juice.shake(10, 0.4);
+          Juice.chromatic(3);
+        }
+        
         // Create explosion and destroy (no split - mark as chain destroyed)
         asteroid.chainDestroyed = true; // Flag to prevent splitting
         Game.explosionAt(asteroid.x, asteroid.y);
@@ -188,6 +194,13 @@ var SimilarityMode = (function() {
       // Award combo bonus
       var comboBonus = chainGroupSize * 100;
       Game.score += comboBonus;
+      
+      // ——— JUICE: chain complete celebration ———
+      if (window.Juice) {
+        Juice.shake(22, 0.85);
+        Juice.chromatic(10);
+        Juice.hitstop(3);
+      }
       
       // Show floating text (if HUD available)
       if (window.HUD && HUD.showFloatingText) {
@@ -417,6 +430,14 @@ var SimilarityMode = (function() {
       // Play implosion sound
       if (window.SFX && SFX.chainImplosion) {
         SFX.chainImplosion();
+      }
+      
+      // ——— JUICE: chain destruction impact ———
+      if (window.Juice) {
+        Juice.shake(28, 0.95);                // EARTHQUAKE camera shake
+        // (no flash — just shake + chromatic)
+        Juice.chromatic(12);                   // heavy chromatic split
+        Juice.hitstop(6);                      // freeze frame
       }
       
       // Get all asteroids in the same group
