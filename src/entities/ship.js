@@ -54,17 +54,31 @@ function approxSpriteRadius(sprite) {
 // Ship SVG assets (preloaded)
 var ShipAssets = {
   body: null,
+  body2lives: null,
+  body1life: null,
   thrust: null,
   bodyLoaded: false,
+  body2livesLoaded: false,
+  body1lifeLoaded: false,
   thrustLoaded: false,
   
   init: function() {
     var self = this;
     
-    // Load ship body SVG
+    // Load ship body SVG (default - 3 lives)
     this.body = new Image();
     this.body.onload = function() { self.bodyLoaded = true; };
     this.body.src = 'assets/images/ship-body.svg';
+    
+    // Load ship body SVG for 2 lives
+    this.body2lives = new Image();
+    this.body2lives.onload = function() { self.body2livesLoaded = true; };
+    this.body2lives.src = 'assets/images/ship-body-2lives.svg';
+    
+    // Load ship body SVG for 1 life
+    this.body1life = new Image();
+    this.body1life.onload = function() { self.body1lifeLoaded = true; };
+    this.body1life.src = 'assets/images/ship-body-1lives.svg';
     
     // Load ship thrust SVG
     this.thrust = new Image();
@@ -74,6 +88,21 @@ var ShipAssets = {
   
   isReady: function() {
     return this.bodyLoaded && this.thrustLoaded;
+  },
+  
+  /** Return the correct body image based on current lives */
+  getBody: function() {
+    // Only switch variants during active gameplay
+    if (typeof Game !== 'undefined' && Game.FSM && 
+        (Game.FSM.state === 'run' || Game.FSM.state === 'new_level' || Game.FSM.state === 'spawn_ship' || Game.FSM.state === 'player_died')) {
+      if (Game.lives === 0 && this.body1lifeLoaded) {
+        return this.body1life;
+      }
+      if (Game.lives === 1 && this.body2livesLoaded) {
+        return this.body2lives;
+      }
+    }
+    return this.body;
   }
 };
 
@@ -568,10 +597,11 @@ Ship.prototype.draw = function () {
       ctx.restore();
     }
 
-    // Draw ship body SVG
-    if (ShipAssets.bodyLoaded) {
+    // Draw ship body SVG (swap asset when player has 2 lives)
+    var currentBody = ShipAssets.getBody();
+    if (currentBody) {
       ctx.drawImage(
-        ShipAssets.body,
+        currentBody,
         -shipWidth / 2,
         -shipHeight / 2,
         shipWidth,
