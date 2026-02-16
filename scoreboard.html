@@ -229,7 +229,7 @@
     }
 
     .status-dot.connected {
-      background: #0f0;
+      background: var(--ui-accent);
     }
 
     @keyframes pulse {
@@ -280,7 +280,7 @@
       width: 100px;
       text-align: right;
       font-weight: 600;
-      color: #0f0;
+      color: var(--ui-accent);
     }
 
     .scoreboard-table tr.highlight td {
@@ -366,16 +366,16 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: rgba(0, 255, 0, 0.15);
-      border: 1px solid #0f0;
+      background: rgba(124, 240, 255, 0.15);
+      border: 1px solid var(--ui-accent);
       padding: 12px 18px;
       border-radius: 8px;
-      color: #0f0;
+      color: var(--ui-accent);
       font-size: 13px;
       transform: translateX(400px);
       transition: transform 0.3s ease-out;
       z-index: 100;
-      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      box-shadow: 0 0 20px rgba(124, 240, 255, 0.3);
     }
 
     .notification.show {

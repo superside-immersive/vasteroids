@@ -3,12 +3,28 @@
    Mobile-first responsive design
    ============================================ */
 
+@font-face {
+    font-family: 'Audiowide';
+    src: url('../../assets/Audiowide-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Orbitron';
+    src: url('../../assets/Orbitron-VariableFont_wght.ttf') format('truetype-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* CSS Variables */
 :root {
     --primary-color: #0066cc;
     --primary-dark: #004999;
     --secondary-color: #6c757d;
-    --success-color: #28a745;
+    --success-color: #7cf0ff;
     --danger-color: #dc3545;
     --warning-color: #ffc107;
     --light-bg: #f8f9fa;
@@ -28,7 +44,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: 'Orbitron', 'Audiowide', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: var(--dark-text);

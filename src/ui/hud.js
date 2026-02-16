@@ -269,7 +269,7 @@ var HUD = (function() {
       daseMeterFill.style.width = durationPercent + '%';
       daseMeterFill.style.background = DASEMode.beamSevered 
         ? 'linear-gradient(90deg, #FF0055, #FF3377)'
-        : 'linear-gradient(90deg, #1FD9FE, #06D69F)';
+        : 'linear-gradient(90deg, #1FD9FE, #7CF0FF)';
       daseMeterLabel.textContent = DASEMode.beamSevered ? '⚠ BEAM SEVERED' : '⚡ TURRET ACTIVE';
       daseMeterLabel.style.color = DASEMode.beamSevered ? '#FF0055' : '#1FD9FE';
       if (daseMeterCounter) {
@@ -287,7 +287,7 @@ var HUD = (function() {
       daseMeterLabel.style.color = '#E86B38';
       if (daseMeterCounter) {
         daseMeterCounter.textContent = fragments + ' / ' + max;
-        daseMeterCounter.style.color = fragments >= max ? '#06D69F' : '#9ca3af';
+        daseMeterCounter.style.color = fragments >= max ? '#7CF0FF' : '#9ca3af';
       }
       daseMeterContainer.classList.remove('active');
       
@@ -320,11 +320,11 @@ var HUD = (function() {
     floater.style.left = x + 'px';
     floater.style.top = y + 'px';
     floater.style.transform = 'translate(-50%, -50%) scale(0.3)';
-    floater.style.color = '#00FF00';
+    floater.style.color = '#7CF0FF';
     floater.style.fontSize = '28px';
     floater.style.fontWeight = 'bold';
     floater.style.fontFamily = "'Orbitron', 'Audiowide', monospace";
-    floater.style.textShadow = '0 0 12px #00FF00, 0 0 24px #00FF00';
+    floater.style.textShadow = '0 0 12px #7CF0FF, 0 0 24px #7CF0FF';
     floater.style.pointerEvents = 'none';
     floater.style.zIndex = '1000';
     floater.style.opacity = '0';

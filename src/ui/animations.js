@@ -270,8 +270,8 @@ var LevelTransitionManager = (function() {
       ctx.fillText('WAVE ' + waveBanner.wave, Game.canvasWidth / 2, Game.canvasHeight / 2 - 50);
       // Secondary text per flowchart
       ctx.font = 'bold 28px "Vector Battle", monospace';
-      ctx.fillStyle = '#06D69F';
-      ctx.shadowColor = '#06D69F';
+      ctx.fillStyle = '#7CF0FF';
+      ctx.shadowColor = '#7CF0FF';
       ctx.shadowBlur = 15;
       ctx.fillText('INGEST RATE INCREASING', Game.canvasWidth / 2, Game.canvasHeight / 2 + 20);
       ctx.restore();
