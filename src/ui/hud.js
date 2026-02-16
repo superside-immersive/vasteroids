@@ -4,6 +4,8 @@ var HUD = (function() {
   var container = null;
   var root = null;
   var scoreNode = null;
+  var scoreValueNode = null;
+  var scoreHighlightTimeout = null;
   var livesNode = null;
   var daseMeterContainer = null;
   var daseMeterFill = null;
@@ -33,7 +35,10 @@ var HUD = (function() {
 
     scoreNode = document.createElement('div');
     scoreNode.className = 'hud-chip hud-score';
-    scoreNode.textContent = 'SCORE 0';
+    scoreNode.innerHTML =
+      '<span class="hud-score-label">SCORE </span>' +
+      '<span class="hud-score-value">0</span>';
+    scoreValueNode = scoreNode.querySelector('.hud-score-value');
 
     achievementBadge = document.createElement('div');
     achievementBadge.className = 'hud-badge hidden';
@@ -122,16 +127,21 @@ var HUD = (function() {
     var delta = score - (lastScore || 0);
     lastScore = score;
     if (!scoreNode) return;
-    scoreNode.textContent = 'SCORE ' + score;
+    if (scoreValueNode) {
+      scoreValueNode.textContent = String(score);
+    } else {
+      scoreNode.textContent = 'SCORE ' + score;
+    }
 
-    // Juicy pulse on big score jumps
-    if (delta >= 500) {
-      scoreNode.style.transition = 'transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.6)';
-      scoreNode.style.transform = 'scale(1.18)';
-      setTimeout(function() {
-        scoreNode.style.transition = 'transform 0.3s ease-out';
-        scoreNode.style.transform = 'scale(1)';
-      }, 130);
+    // Highlight only the number while score increases (no size/scale change)
+    if (delta > 0 && scoreValueNode) {
+      scoreValueNode.classList.remove('score-increase-highlight');
+      void scoreValueNode.offsetWidth;
+      scoreValueNode.classList.add('score-increase-highlight');
+      if (scoreHighlightTimeout) clearTimeout(scoreHighlightTimeout);
+      scoreHighlightTimeout = setTimeout(function() {
+        if (scoreValueNode) scoreValueNode.classList.remove('score-increase-highlight');
+      }, 180);
     }
   }
 

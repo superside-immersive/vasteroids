@@ -89,6 +89,21 @@
   text-shadow: none;
 }
 
+.hud-score-label {
+  opacity: 0.92;
+}
+
+.hud-score-value {
+  color: #7CF0FF;
+  text-shadow: none;
+  transition: color 0.16s ease-out, text-shadow 0.16s ease-out;
+}
+
+.hud-score-value.score-increase-highlight {
+  color: #E5E7EB;
+  text-shadow: 0 0 10px rgba(124, 240, 255, 0.95), 0 0 20px rgba(124, 240, 255, 0.45);
+}
+
 /* Lives Display */
 .hud-lives {
   display: flex;
@@ -107,6 +122,9 @@
 .hud-wave {
   color: #FFBC42;
   border-color: #FFBC42;
+  white-space: nowrap;
+  min-width: 98px;
+  text-align: center;
 }
 
 /* ==========================================================================
